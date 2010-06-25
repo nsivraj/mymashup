@@ -1,1 +1,23 @@
-The MyMashup README, another change.
+The MyMashup README.
+
+GIT repository setup -- here is what I did
+-------------------------------------------------------------------------------------
+cd ~/forge/personal/code/
+mkdir repo_git
+cd repo_git
+git init
+git clone git://github.com/bard/mozrepl.git mozrepl
+git clone git@github.com:nsivraj/mymashup.git
+cd mozrepl
+git pull
+cd ../mymashup
+git pull
+
+Writing to remote GIT repository on www.github.com -- here is what I did
+-------------------------------------------------------------------------------------
+cd ~/forge/personal/code/repo_git/mymashup
+vi README
+git commit -a
+git push
+
+other steps here in order to get mymashup working....
