@@ -22,6 +22,11 @@ vi README
 git commit -a
 git push
 
+In subsequent writes to www.github.com I did the following
+-------------------------------------------------------------------------------------
+git add -A
+git commit -a
+git push
 
 To Create the mozrepl.xpi --  here is what I did
 -------------------------------------------------------------------------------------
