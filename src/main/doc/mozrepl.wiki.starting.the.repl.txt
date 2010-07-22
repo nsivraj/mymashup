@@ -1,0 +1,26 @@
+Starting the REPL
+
+Go to Firefox Tools menu and select MozLab → Start MozRepl. MozRepl is now listening for connections on the default port 4242.
+
+Open the command shell of your operating system and type:
+
+
+    telnet localhost 4242
+
+You’ll be presented with the prompt:
+
+
+    repl>
+
+You’re in!
+Platform-specific notes
+
+If you’re using Microsoft’s telnet for Windows, it’s probably set to handle one-character-at-a-time instead of one-line-at-a-time. See the Troubleshooting page, or just use netcat (recommended) or putty.
+
+If you’re on Linux or some other Unix variant, you can use rlwrap to get command history and other niceties. Use arrow-up/down to retrieve previous commands and Control+R to search among them.
+
+
+    $ rlwrap telnet localhost 4242
+
+If you’re using Emacs, see the Emacs integration page.
+

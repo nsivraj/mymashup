@@ -1,0 +1,167 @@
+Command: printStructureAsHTML()
+
+Whilst printStructure is useful to help you navigate, you may also want to see the DOM as it currently is in memory printed out as HTML, so that you can debug AJAX applications that change the page after it is loaded. This also helps you get at the HTML when it is buried in frames and so on.
+
+Add the following to your custom commands, and then from initial REPL connection you can:
+
+repl.enter(content.wrappedJSObject)
+repl.printStructureAsHTML()
+
+to dump the HTML for the page as it is now. I have only tested this with one tab open…
+
+  function printStructureAsHTML(root) {
+      var document;
+      if(typeof(root) === 'undefined') {
+          if('document' in this._workContext) {
+              document = this._workContext.document;
+              root = this._workContext.document.documentElement;
+          } else
+              throw new Error('Need a starting point.');
+      } else {
+          document = root.ownerDocument;
+      }
+
+	var s = nodeToHTML(document, "", "");  
+  
+        this.print(s);
+      }
+
+function nodeToHTML(node, indentation, out)
+{
+	var nN = node.nodeName.toLowerCase();
+	var val = node.nodeValue;
+
+	var openingTagStart = ''; var openingTagName = ''; var openingTagEnd = '';
+	var closingTagStart = ''; var closingTagName = ''; var closingTagEnd = '';
+	var lineBreak = '\n';
+	var subsequentIndentation = indentation;		// after printing the opening tag, whether or not to continue to indent for value and closing tag
+	var addToIndentation = '   ';				// what is an indent
+
+	// What should the tags that form this element look like?
+	if(nN == '#comment')		// Instead of the tag, print the comment tag
+	{
+		openingTagStart = '<'; openingTagName = '!-- '; openingTagEnd = '';
+		closingTagStart = ''; closingTagName = ' --'; closingTagEnd = '>';
+	}
+	else if(nN.indexOf('#') == -1)	// print the tag name
+	{
+		openingTagStart = '<'; openingTagName = nN; openingTagEnd = '>';
+		closingTagStart = '</'; closingTagName = nN; closingTagEnd = '>';
+	}
+	else	// otherwise we don't print the tag (#text. #document, etc.)
+	{
+		openingTagStart = ''; openingTagName = ''; openingTagEnd = '';
+		closingTagStart = ''; closingTagName = ''; closingTagEnd = '';
+		addToIndentation = '';
+	}
+
+	// Do we put line breaks after the opening tag and value, and do we indent?
+	var numChildNodes = node.childNodes.length;			// how many children do we have?
+	if(numChildNodes == 0 && nN == '#text')
+	{
+		subsequentIndentation = '';					// and don't indent
+		indentation = '';							// at all
+		var strippedVal = chomp(lchomp(val));
+		if(!strippedVal.match(/[\n\r]+/))
+		{
+			val = rtrim(ltrim(strippedVal));			// if we are not multiline value, strip off leading and trailing whitespace and newlines
+			lineBreak = '';						// this is an empty node, so don't insert a line break before the closing tag
+		}
+		else
+		{
+			val = strippedVal;					// otherwise just get read of newlines
+			lineBreak = '\n';
+		}
+	}
+	else if(numChildNodes == 0)
+	{
+		lineBreak = '';							// this is an empty node, so don't insert a line break before the closing tag
+		subsequentIndentation = '';					// and don't indent
+	}
+	else if(numChildNodes == 1 && node.firstChild.nodeName.toLowerCase() == '#text')
+	{
+		// this node only has a value, no other elements inside it
+		var childVal  = node.firstChild.nodeValue;
+		if(childVal != null)
+		{
+			var strippedChildVal = chomp(lchomp(childVal));			// Take off any newlines at beginning or end. 
+			if(!strippedChildVal.match(/[\n\r]+/))				// other than at the beginning and end, are there any newlines in the child's value?
+			{
+				lineBreak = '';							// No. It's probably short. Keep it tight in between the tags
+				subsequentIndentation = '';					// and don't indent
+			}
+			else
+			{
+			// Yes. Leave line breaks and indents as is
+				lineBreak = '\n';
+				subsequentIndentation = indentation;
+			}
+		}
+	}
+	else
+	{
+		lineBreak = '\n';
+		subsequentIndentation = indentation;
+	}
+	
+	out += indentation;
+	if(openingTagName)	// if we are supposed to print a tag
+	{
+		out += openingTagStart + openingTagName;
+		if (node.attributes!=null)
+		{
+			for (var i=0; i<node.attributes.length; i++)
+			{
+			  var item = node.attributes.item(i);
+			  var value = item.nodeValue;
+			  if (value==null) value = "";
+			  out += " "+item.nodeName+"=\""+value+"\"";
+			}
+		}
+		//out += numChildNodes;
+		out += openingTagEnd + lineBreak;
+	}
+
+	for (var i=0; i<numChildNodes; i++)
+	{
+      	var item = node.childNodes.item(i);
+		out = nodeToHTML(item, indentation + addToIndentation, out);
+	}
+
+	if (val!=null)
+	{
+		if(subsequentIndentation) out += subsequentIndentation + addToIndentation;
+		out += val + lineBreak;			// add one newline before the closing tag if appropriate
+	}
+
+	if(openingTagName)
+	{
+		out += subsequentIndentation;
+		out += closingTagStart + closingTagName + closingTagEnd;
+		out += "\n";
+	}
+
+	return out;
+}
+
+function chomp(raw_text)
+{
+  return raw_text.replace(/(\n|\r)+$/g, '');
+}
+
+function lchomp(raw_text)
+{
+  return raw_text.replace(/^(\n|\r)+/g, '');
+}
+
+function ltrim(raw_text)
+{
+  return raw_text.replace(/^[ \t\0\x0B]+/g, '');
+}
+
+function rtrim(raw_text)
+{
+  return raw_text.replace(/[ \t\0\x0B]+$/g, '');
+}
+
+

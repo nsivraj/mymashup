@@ -1,0 +1,88 @@
+inspecting objects withought entering them
+
+I added some functionality to mozrepl which seems to be pretty useful (At least for me :)
+
+Sometimes when you need to inspect / interact with some object you need to do a lot of repl.enter() command before you reach the object you need. Sometimes it getting too complicated when your object is under a several levels of anonymous elements and iframes. (Hard to believe but such a cases exists :) So basically what I have added some functionality to grab object like you do in dom inspector, bit painful but still.
+
+here is ode which you can actually add to the file specified in extensions.mozrepl.initUrl preferance
+
+
+
+
+var grabInfinite = false;
+
+function grab(infinite){
+grabInfinite = infinite || false;
+var grabOnce = true;
+var context = this._workContext;
+var target = { value : undefined };
+
+var blinkObject = function(target,number){
+var params = {
+originalBorder : target.style.MozOutline,
+changedBorder : “1px dotted red”,
+target : target,
+number : number || 3,
+window : context.window
+};
+
+var flashOff = function(){
+var params = arguments0;
+params.target.style.MozOutline = params.originalBorder;
+if (params.number > 0) {
+params.window.setTimeout(flashOn,100,params);
+}
+};
+var flashOn = function(){
+var params = arguments0;
+params.number —;
+params.target.style.MozOutline = params.changedBorder;
+params.window.setTimeout(flashOff,100,params);
+};
+
+context.window.setTimeout(flashOn,100,params);
+};
+
+var grabber = function(event){
+if (grabInfinite || grabOnce) {
+grabOnce = false;
+event.preventDefault();
+event.stopPropagation();
+target.value = event.target;
+blinkObject(target.value);
+} else if (!grabInfinite){
+context.window.removeEventListener(“click”, grabber, true);
+}
+};
+context.window.addEventListener(“click”,grabber,true);
+return target;
+
+}
+
+grab.doc = “Grabs object which was clicked (If argument true is passed grubs untill grabMouseStrop is called)”;
+
+function grabStop(){
+grabInfinite = false;
+}
+grabStop.doc = “Stops grabbing objects”;
+
+After you can connect with mozrepl as you usually do and type somthing like this in console
+
+
+repl> var suspect = repl.grab();
+
+after click any palce in the window and it will blink the way it does in dom inspector. Now you can access the object you just pointed like this:
+
+repl> suspect.value [object XULElement] — {addEventListener: function() {…}, accessibleType: 4131, type: "", dlgType: "", group: "", open: false, checked: false, ...} repl>
+
+And another alternative method of grabbing objects specially for non snipers
+
+repl> var suspect = repl.grab(true);
+
+Now it will grab objects until you’ll stop it like this:
+
+repl> repl.grabStop();
+
+Enjoy the hacking!!
+P.S.: I don’t mind if it will be added to the default repl functions
+

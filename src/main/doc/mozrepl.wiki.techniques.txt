@@ -1,0 +1,56 @@
+Techniques
+Breadcrumbs
+
+When printf-debugging objects from a function we often run the function repeatedly and each time look at a different aspect of the object.
+
+
+// first run...
+function foo(xulElement) {
+    // ...
+    alert('local name: ' + xulElement.localName);
+    // ...
+}
+
+// uhm! the alert only shows us 'local name: ' and nothing after it,
+// meaning that xulElement.localName is undefined.  what is
+// xulElement, then?
+
+// second run...
+function foo(xulElement) {
+    // ...
+    alert('xul element: ' + xulElement);
+    // ...
+}
+
+This quickly gets time-consuming if running foo() again requires a restart and lots of setup. Instead, do:
+
+
+function foo(xulElement) {
+    // ...
+    top.el = xulElement;
+    // ...
+}
+
+Then from MozRepl prompt:
+
+
+repl> repl.print(top.el.localName);
+
+repl> // previous command shows nothing, meaning localName is undefined
+repl> top.el
+"btnSave"
+
+Ooops! Looks like someone passed an id instead of an element.
+Scope sneaking
+
+[TODO]
+Surfacing
+
+[TODO]
+Auto-re-entering
+
+When the browser reloads the page, the repl will return to its creation context since the page it’s working on disappears. If you want it to automatically re-enter the page, you can redefine the home function:
+
+repl.home = function() { return this.enter(this._creationContext.content); }
+
+

@@ -1,0 +1,71 @@
+  Current working context: chrome://browser/content/browser.xul
+  Current input mode: syntax
+  
+  repl> repl.printStructure()
+  window/script[src="chrome://global/content/printUtils.js"]
+  window/script[src="chrome://global/content/viewZoomOverlay.js"]
+  window/script[src="chrome://browser/content/browser.js"]
+  window/script[src="chrome://global/content/inlineSpellCheckUI.js"]
+  window/script[src="chrome://global/content/viewSourceUtils.js"]
+  window/script[src="chrome://browser/content/nsContextMenu.js"]
+  window/script[src="chrome://browser/content/safebrowsing/sb-loader.js"]
+  window/script[src="chrome://global/content/contentAreaUtils.js"]
+  window/script[src="chrome://browser/content/places/editBookmarkOverlay.js"]
+  window/stringbundleset#stringbundleset
+  window/stringbundleset/stringbundle#bundle_brand
+  window/stringbundleset/stringbundle#bundle_shell
+  window/stringbundleset/stringbundle#bundle_preferences
+  [...]
+
+    repl> repl.printStructure();
+    repl> repl.printStructure(domNode);
+
+  function printStructure(root) {
+      var document;
+      if(typeof(root) === 'undefined') {
+          if('document' in this._workContext) {
+              document = this._workContext.document;
+              root = this._workContext.document.documentElement;
+          } else
+              throw new Error('Need a starting point.');
+      } else {
+          document = root.ownerDocument;
+      }
+              
+      var walker = document.createTreeWalker(
+          root,
+          Ci.nsIDOMNodeFilter.SHOW_ELEMENT,
+          { acceptNode: function(node) Ci.nsIDOMNodeFilter.FILTER_ACCEPT },
+          false);
+  
+      while(walker.nextNode()) {
+          let node = walker.currentNode;
+  
+          let s = '';
+          switch(node.tagName) {
+          case 'script':
+              s += '[src="' + node.getAttribute('src') + '"]'
+              break;
+          case 'menuitem':
+          case 'button':
+              s += '[label="' + node.getAttribute('label') + '"]'
+              break;
+          case 'label':
+              s += '[value="' + node.getAttribute('value') + '"]'
+              break;
+          default:
+              if(node.hasAttribute('id'))
+                  s += '#' + node.getAttribute('id');
+          }
+  
+          let path = [];
+          while(node.parentNode) {
+              path.unshift(node);
+              node = node.parentNode;
+          }
+  
+          s = path.map(function(n) n.nodeName).join('/') + s;
+          this.print(s);
+      }
+  }
+

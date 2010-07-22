@@ -1,0 +1,13 @@
+    repl> var windows = repl.getWindows()
+
+
+function getWindows() {
+    var windowEnum = Cc['@mozilla.org/appshell/window-mediator;1']
+        .getService(Ci.nsIWindowMediator).getEnumerator('');
+    var windows = [];
+    while(windowEnum.hasMoreElements())
+        windows.push(windowEnum.getNext());
+
+    return windows;
+}
+

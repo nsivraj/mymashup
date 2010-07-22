@@ -1,0 +1,15 @@
+Custom commands
+
+New commands can be added to the REPL through an initialization file. Go to the about:config URL, find extensions.mozrepl.initUrl, and set this value to a local URL (chrome:// or file://). The URL contents will be loaded in the REPL. Example:
+
+First, set extensions.mozrepl.initUrl to file://localhost/tmp/custom.js, then Create a /tmp/custom.js file with the following content:
+
+
+    var startedAt = new Date();
+
+    function report() {
+        this.print('I was started at ' + startedAt);
+    }
+
+Every time you start a REPL, you’ll be able to read a repl.startedAt property and invoke a repl.report() method.
+

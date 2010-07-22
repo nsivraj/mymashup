@@ -1,0 +1,11 @@
+Use with XULRunner
+
+Simply put MozRepl XPI package under your application’s extension/ directory and launch the application like this:
+
+
+    $ xulrunner application.ini -repl
+
+You can optionally specify a port number after the -repl switch, otherwise the default 4242 will be used.
+
+If you get tired of typing -repl on the command line, you can also set the extensions.mozrepl.autoStart preference to true.
+

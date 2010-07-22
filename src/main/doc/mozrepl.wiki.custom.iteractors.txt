@@ -1,0 +1,91 @@
+Custom interactors
+
+By default, MozRepl listens for JavaScript code, evaluates it, and prints the result of the evaluation.
+
+An experimental feature allows you to replace this scheme, listen for any kind of input and return results in any format you want, while still operating inside the repl object and the XUL application.
+
+As an example, try the following toy object inspector.
+
+Create a file (e.g. /home/user/.mozrepl.js), copy and paste the content below, and set extensions.mozrepl.initUrl to the file URI (file:///home/user/.mozrepl.js).
+
+
+    defineInteractor('inspect', {
+        onStart: function(repl) {
+        },
+    
+        getPrompt: function(repl) {
+            return '\nLocation: ' + represent(repl._workContext) + '\ni> ';
+        },
+    
+        handleInput: function(repl, input) {
+            var [command, arg] = input.replace(/^\s+|\s+$/g, '').split(/\s+/, 2);
+    
+            switch(command) {
+            case 'q':
+                repl.popInteractor(); // returns to previous interactor
+                break;
+    
+            case 'l':
+                repl.look();
+                break;
+    
+            case 's':
+                repl.print((arg ? repl._workContext : repl._workContext).toString());
+                break;
+    
+            case 'e':
+                repl.enter(repl._workContext[arg]);
+                break;
+    
+            case 'b':
+                repl.back();
+                break;
+    
+            case 'h':
+                repl.print('l        : look around in current context');
+                repl.print('e <name> : enter object pointed to by <name>');
+                repl.print('s <name> : show object poined by <name> using toString()');
+                repl.print('b        : go back to previous context');
+                repl.print('h        : this help text');
+                repl.print('q        : quit inspector, go back to javascript interactor');
+                break;
+    
+            default:
+                repl.print('Uknown command.');
+                break;
+            }
+            repl._prompt();
+        }
+    });
+
+Connect to the REPL and test it:
+
+
+    repl> repl.pushInteractor('inspect')
+    Location: [object ChromeWindow] — {repl: {…}, NS_ASSERT: function() {…}, 
+    location: {…}, PluralForm: {…}, DownloadUtils: {…}, __SSi: "window1222382445235", 
+    statusBar: {…}, ...}
+    i> h
+    l        : look around in current context
+    e <name> : enter object pointed to by <name>
+    s <name> : show object poined by <name> using toString()
+    b        : go back to previous context
+    h        : this help text
+    q        : quit inspector, go back to javascript interactor
+
+    Location: [object ChromeWindow] — {repl: {…}, NS_ASSERT: function() {…}, 
+    location: {…}, PluralForm: {…}, DownloadUtils: {…}, __SSi: "window1222382445235", 
+    statusBar: {…}, ...}
+    i> s BrowserHome
+    function BrowserHome() {
+        var homePage = gHomeButton.getHomePage();
+        loadOneOrMoreURIs(homePage);
+    }
+
+Default interactor
+
+You can also make a custom interactor the default one by setting the extensions.mozrepl.defaultInteractor to the interactor name, e.g. “inspect”. By default this is “javascript”.
+Caveats
+
+The current implementation is experimental, it can (and will) change.
+

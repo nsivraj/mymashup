@@ -1,0 +1,20 @@
+Troubleshooting
+
+    * On Windows, telnet will probably start in character-at-a-time mode. To put it into line-at-a-time mode, press the escape combination (usually Control+]) and enter the command:
+
+set mode console
+
+Windows 2000 telnet has been reported to have no such option. If that is the case, try putty instead.
+
+    * If connecting to MozRepl with putty as terminal emulator, and you get an error in response to the first command you send, it is probably because of terminal control characters that putty sends and MozRepl cannot interpret. Change the terminal type to “raw”. (Reported by Alex Peuchert).
+    * If you’re inspecting the top level context with a repl.inspect(window) or repl.look() and the session gets interrupted just after the arguments=[probably array, length 1] entry, it might be because the Java virtual machine is not installed (the next context entries are in fact Packages, sun, and java). Retry after installing the virtual machine. (Reported by Alex Peuchert)
+
+    * If you get an error like the following when starting MozRepl, try using a different port than the default 4242.
+
+MozRepl: Exception: [Exception... "Component returned failure code: 0x80004005 (NS_ERROR_FAILURE) [nsIServerSocket.init]"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame :: chrome://mozrepl/content/server.js :: start :: line 95"  data: no]
+
+You can also try to diagnose what other program is using MozRepl’s default port:
+
+lsof | grep 4242
+
+

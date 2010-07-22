@@ -1,0 +1,26 @@
+Command: Simple DOM Grabber
+Usage
+
+
+    repl> var res = repl.grab();
+    repl> /* click an element in the browser... */
+    repl> alert(res.event.target);
+
+Code
+
+
+function grab() {
+    var document = this._workContext.document;
+    if(!document)
+        throw new Error('No document around.');
+    var result = {};
+    var grabber = function(event) {
+        result.event = event;
+        event.stopPropagation();
+        document.removeEventListener('click', grabber, true);
+    };
+    document.addEventListener('click', grabber, true);
+    return result;
+}
+
+

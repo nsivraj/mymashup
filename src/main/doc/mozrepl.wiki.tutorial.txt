@@ -1,0 +1,216 @@
+Tutorial
+
+After connection you’ll be in the context of the browser window (not the web page!), and everything you write will be evaluated there:
+
+
+  repl> repl.whereAmI()
+    [object ChromeWindow] - Document title: "Firefox"
+  repl> repl.look()
+    this.repl=[object]
+    this.browserContentListener=[object]
+    this.getInterface=[function]
+    this.XULBrowserWindow=[object]
+    this.tryToClose=[function]
+    this.document=[object]
+    [...]
+
+Typing document.title will be equivalent to typing window.document.title:
+
+
+  repl> document.title
+    Firefox
+
+You can modify what you see around. The following changes the window title and hides the toolbar:
+
+
+  repl> document.title = 'REPL-powered Firefox'
+    REPL-powered Firefox
+  repl> document.getElementById('toolbar-menubar').hidden = true
+    true
+
+You can enter other parts of the interface, have a look, play with things, get online docs for XUL elements (a browser popup appears), then go back:
+
+
+  repl> var c = document.getElementById('urlbar-container')
+  repl> repl.enter(c)
+    [object XULElement]
+  repl> firstChild
+    [object XULElement]
+  repl> repl.doc(firstChild)
+    TYPE: object
+    NODENAME: textbox
+
+    Online help found, displaying...
+  repl> repl.back()
+    [object ChromeWindow]
+
+When you’re tired of the browser’s internals, try exploring a web page:
+
+
+  repl> repl.home()
+    [object ChromeWindow]
+  repl> content.location.href = 'http://maps.google.com'
+    http://www.google.com
+  repl> repl.enter(content) // for Firefox 3 you'll need: repl.enter(content.wrappedJSObject)
+    [object Window]
+  repl> repl.whereAmI()
+    [object Window] - Document title: "Google Maps"
+  repl> repl.look()
+    this.G_HYBRID_TYPE=[object]
+    this.G_HYBRID_MAP=[object]
+    this.G_SATELLITE_TYPE=[object]
+    [...]
+  repl> repl.search(/app/i)
+    GMapsApplication
+    loadApplication
+    gApplication
+    _mMapPrintUrl
+    XPCNativeWrapper
+  repl> repl.doc(gApplication)
+    TYPE: object
+  repl> repl.enter(gApplication)
+    [object Object]
+  repl> repl.look()
+    this.ra=[object]
+    this.We=[object]
+    [...]
+  repl> repl.search(/get/)
+    getMap
+    getOverviewMapControl
+    getPageUrl
+    getTabUrl
+    getMarker
+    getPolyline
+    getVPageUrlParams
+  repl> repl.doc(getPageUrl)
+    TYPE: function
+    ARGS: [none declared]
+  repl> getPageUrl()
+    http://maps.google.com/?ll=37.020098,-49.042969&spn=61.328812,93.164062&om=1
+  repl>
+
+To go back to the context where the REPL was started:
+
+
+  repl> repl.home();
+    [object ChromeWindow]
+  repl>
+
+Creating a new context and working inside it, e.g. for testing new stuff, is easy, and what you define there, stays there:
+
+
+  repl> var scratch = {}
+  repl> repl.enter(scratch)
+    [object Object]    
+  repl> repl.look()
+    this is empty
+  repl> var x = 2
+  repl> var y = 'hello'
+  repl> x
+    2
+  repl> y
+    hello
+  repl> repl.look()
+    this.x=2
+    this.y=hello
+  repl> repl.back()
+    [object ChromeWindow]
+  repl> x
+    	@data:application/x-javascript,x:1
+
+    !!! ReferenceError: x is not defined
+  repl> y
+    	@data:application/x-javascript,y:1
+
+    !!! ReferenceError: y is not defined
+  repl> scratch.x
+    2
+  repl> scratch.y
+    hello
+  repl>
+
+You can also mess with the REPL itself:
+
+
+  repl> repl.enter(repl)
+    [object Object]
+  repl> function sayHello() { this.print('hello from repl!') }
+  repl> sayHello.doc = 'just say hello'
+    just say hello
+  repl> repl.back()
+    [object ChromeWindow]
+  repl> repl.doc(repl.sayHello)
+    TYPE: function
+    NAME: sayHello
+    ARGS: [none declared]
+
+    just say hello
+  repl> repl.sayHello()
+    hello from repl!
+  repl>
+
+To find out more about REPL commands, inspect() it, and then use doc() for more specific information.
+
+
+  repl> repl.inspect(repl)
+    [...]
+    <object>.back=[function]
+
+    <object>.sayHello=[function]
+        just say hello
+    <object>.module=[object]
+    <object>.util=[object]
+    <object>.setenv=[function]
+        Takes a name and a value and stores them so that they can be later ...
+    <object>.getenv=[function]
+        Given a name, returns a value previously stored via setenv().
+    <object>.pushenv=[function]
+        Takes one or more names of values previously stored via setenv(), a...
+    <object>.popenv=[function]
+        Takes one or more names of values previously pushed via popenv() an...
+    <object>.print=[function]
+        Converts an object to a string and prints the string. Appends a new...
+    [...]
+  repl> repl.doc(repl.print)
+    TYPE: function
+    NAME: print
+    ARGS: data, appendNewline
+
+Converts an object to a string and prints the string. Appends a
+newline unless false is given as second parameter.
+
+
+  repl> repl.inspect(repl)
+    [...]
+    <object>.back=[function]
+    <object>.sayHello=[function]
+        just say hello
+    <object>.module=[object]
+    <object>.util=[object]
+    <object>.setenv=[function]
+        Takes a name and a value and stores them so that they can be later ...
+    <object>.getenv=[function]
+        Given a name, returns a value previously stored via setenv().
+
+    <object>.pushenv=[function]
+        Takes one or more names of values previously stored via setenv(), a...
+    <object>.popenv=[function]
+        Takes one or more names of values previously pushed via popenv() an...
+    <object>.print=[function]
+        Converts an object to a string and prints the string. Appends a new...
+    [...]
+  repl> repl.doc(repl.print)
+    TYPE: function
+    NAME: print
+    ARGS: data, appendNewline
+
+    Converts an object to a string and prints the string. Appends a
+    newline unless false is given as second parameter.
+  repl>
+
+When you’re done:
+
+
+  repl> repl.quit()
+
+
