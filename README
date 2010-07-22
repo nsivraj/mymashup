@@ -2,6 +2,7 @@ The MyMashup README.
 
 GIT repository setup -- here is what I did
 -------------------------------------------------------------------------------------
+Make sure that git is installed
 cd ~/forge/personal/code/
 mkdir repo_git
 cd repo_git
@@ -13,11 +14,27 @@ git pull
 cd ../mymashup
 git pull
 
+
 Writing to remote GIT repository on www.github.com -- here is what I did
 -------------------------------------------------------------------------------------
 cd ~/forge/personal/code/repo_git/mymashup
 vi README
 git commit -a
 git push
+
+
+To Create the mozrepl.xpi --  here is what I did
+-------------------------------------------------------------------------------------
+cd ~/forge/personal/code/repo_git/mymashup/src/main/bin
+./create.mozrepl.xpi.sh
+
+To Install and Configure the mozrepl.xpi -- here is what I did
+-------------------------------------------------------------------------------------
+In Firefox open the file mozrepl.xpi and then restart Firefox.
+When Firefox has restarted then access the about:config URL
+Search (Ctrl-s) for mozrepl
+Double-click on extensions.mozrepl.initUrl
+Enter the value /home/nsivraj/forge/personal/code/repo_git/mymashup/src/main/js/mymashup.js
+
 
 other steps here in order to get mymashup working....
