@@ -1,0 +1,27 @@
+<html>
+<head>
+<mashlet style="display:none;" id="googleTitle" uri="http://www.google.com/" xpath="/html/head/title" htmlTag="title"></mashlet>
+</head>
+<body>
+<mashlet useStyle="color:red;" style="display:none;" id="googleTitle1" uri="http://www.google.com/" xpath="/html/head/title" htmlTag="h1"></mashlet>
+<mashlet style="display:none;" uri="http://www.google.com/">
+<xpath>//*[@id="logo"]</xpath>
+<m-form>
+<m-param><m-name>param1</m-name><m-value>val1</m-value></m-param>
+<m-param><m-name>param2</m-name><m-value>val2</m-value></m-param>
+</m-form>
+</mashlet>
+<span>this <mashlet style="display:none;" id="someId" htmlTag="b" uri="http://www.google.com/" httpmethod="post">
+<xpath>//*[@id="logo2"]</xpath>
+<m-form>
+<m-param><m-name>param3</m-name><m-value>val3</m-value></m-param>
+<m-param><m-name>param4</m-name><m-value>val4</m-value></m-param>
+</m-form>
+</mashlet>one</span><mashlet style="display:none;" uri="http://www.google.com/" xpath="/html/body/table"></mashlet>
+<span><mashlet style="display:none;" uri="http://www.google.com/"><xpath>//*[@id="logo3"]</xpath></mashlet>second one</span>
+<span>third one<mashlet disabled="disabled" style="display:none;" uri="http://www.google.com/"><xpath>//*[@id="logo4"]</xpath></mashlet></span>
+<mashlet style="display:none;" id="anId" uri="http://www.google.com/"><xpath>//*[@id="logo5"]</xpath></mashlet>
+
+</body>
+</html>
+
