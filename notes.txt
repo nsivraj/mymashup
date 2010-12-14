@@ -1,0 +1,16 @@
+// load a sequence of pages and make it so that each page
+// loads completely before the subsequent page loads
+
+1) DONE -- The mymashup.js file should only load the .js files to be used for executing the page sequence
+2) There should be one kernel.js javascript that defines the URLHandler (GetURL) javascript object.
+   The URLHandler javascript object must also support waiting a specified time duration before
+   loading the next URL - this is useful for plugins like the PDF plugin that reports the page has
+   already loaded but the actual content still has not loaded. There also needs to be a
+   looping capability so that a given sequence of WebScreens and be looped over several times.
+   There should also be a timing facility to cause the URLHandler object to wait until a particular
+   time of day before it starts the WebScreen sequence.
+3) Each other .js file defines a sequence of WebScreens and situational processing logic.
+   These individual .js files MUST also contain their own startup methods that can be
+   invoked via "repl.<methodName>()" with parameters being passed in if needed.
+
+   

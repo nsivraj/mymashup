@@ -1,0 +1,44 @@
+//window.addEventListener('load',function(e){
+//
+//	   gBrowser.addEventListener('DOMContentLoaded',function(evt){
+//
+//	      if(evt.originalTarget instanceof HTMLDocument && evt.originalTarget.location && evt.originalTarget.location.match('whatever')){
+//	         let pageDocument = evt.originalTarget;
+//	         
+//	         let pageDocumentWindow = pageDocument.defaultView;
+//
+//	         pageDocumentWindow.addEventListener('hashchange',function(e){
+//	         
+//	            alert(e.type);
+//	         
+//	         },false);
+//	      }
+//
+//	   },false);
+//
+//	},false);
+
+
+
+		//this.repl.print("Here 6");
+		//this.domWindow.document.addEventListener("DOMContentLoaded", onloadCallback, true);
+		//this.repl.print("Here 7");
+		//this.chromeWin.document.addEventListener("DOMContentLoaded", function (e) { this.repl.print("e.type: " + e.type); }, true);
+		this.chromeWin.document.addEventListener('load', onloadCallback, true);
+		//repl._hostContext.addEventListener('load', onloadCallback, false);
+		//this.repl.print("Here 8");
+		//this.domWindow.addEventListener('load', onloadCallback, false);
+		//window.addEventListener('load', onloadCallback, false);
+		//this.repl.print("Here 9");
+		//this.chromeWin.addEventListener("load", onloadCallback, true);
+		//this.repl.print("Here 10");
+
+		
+		
+		// initialize the this.params object to the values in the params object
+		//this.params = {};
+		//for(var paramKey in params)
+		//{
+		//	this.params[paramKey] = params[paramKey];
+		//}
+		
