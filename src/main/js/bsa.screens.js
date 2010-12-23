@@ -22,19 +22,24 @@ function reportTest()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 this.print("****************************************************");
 this.print("*");
-this.print("* Start with repl.loadMBCounselors(); or repl.???().");
+this.print("* Start with repl.loadMBCounselors();.");
 this.print("*");
 this.print("****************************************************");
 
 function loadMBCounselors()
 {
 	var params = {};
+	params.invokedFromMethod = "loadMBCounselors";
+	params.username = "";
+	params.password = "";
+	
+	return globalURLHandler.getURL("http://www.gmail.com/", "meritBadgeLogin", params);
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 //this section is for the actual WebScreens methods
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-WebScreens.prototype.screen1 = function (screenURL, loadedURL, params)
+WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 {
 	
 };

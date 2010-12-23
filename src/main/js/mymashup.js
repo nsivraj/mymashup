@@ -40,3 +40,17 @@ function loadScreens(whichScreens)
 		repl.load(mozreplInitDir + "/test.screens.js", repl);
 	}
 }
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// this section is for short cut methods to by pass the reloading of the .js
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+function reloadScript()
+{
+	repl.loadInit();
+	repl.loadScreens("test");
+	repl.startTest();
+	//repl.loadScreens("bsa");
+	//repl.loadMBCounselors();
+}

@@ -1,3 +1,32 @@
+	// TODO: somehow use the properties of the event object to determine if the methodName should
+	//       be invoked or not because there are a lot of 'onload' events that get into this
+	//       method but are not the events for which the html is loaded, the other load
+	//       events are for .css, .js, images (.gif, .jpg, etc.) or other related files, the
+	//       methodName should only be invoked for the onload event of the html content
+	//       another URL that sometimes gets loaded is 'about:blank'
+
+
+
+
+	//this.repl.print("this.domWindow: " + this.domWindow);
+	//this.repl.print("this.domWindow.document: " + this.domWindow.document);
+	//this.repl.print("this.domWindow.document.forms: " + this.domWindow.document.forms);
+	//this.repl.print("this.domWindow.document.forms[0]: " + this.domWindow.document.forms[0]);
+	//this.domWindow.document.forms[0].Email.value = "norman.jarvis";
+	
+	//this.repl.print("this.domWindow.document.getElementById('gaia_loginform'): " + this.domWindow.document.getElementById('gaia_loginform'));
+	//this.repl.print("this.domWindow.document.getElementById('gaia_loginform').elements[0]: " + this.domWindow.document.getElementById('gaia_loginform').elements[0]);
+	//this.repl.print("this.domWindow.document.getElementById('gaia_loginform').elements[0].name: " + this.domWindow.document.getElementById('gaia_loginform').elements[0].name);
+	//this.domWindow.document.getElementById('gaia_loginform').elements[0].value = "norman.jarvis";
+	
+	//this.domWindow.document.getElementById('Email').value = "norman.jarvis";
+	//this.domWindow.document.getElementById('Passwd').value = "norman.jarvis";
+
+	//this.repl.print("From inside the gmail method screenURL: " + screenURL);
+	//this.repl.print("From inside the gmail method loadedURL: " + loadedURL);
+	//this.repl.print("From inside the gmail method params: " + params);
+
+
 //window.addEventListener('load',function(e){
 //
 //	   gBrowser.addEventListener('DOMContentLoaded',function(evt){

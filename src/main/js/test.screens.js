@@ -30,71 +30,49 @@ function startTest()
 {
 	var params = {};
 	params.invokedFromMethod = "startTest";
+	params.username = "zoppie";
+	params.password = "mymashup";
+	params.PersistentCookie = false;
 	
-	return globalURLHandler.getURL("http://www.gmail.com/", "gmail", params);
+	return globalURLHandler.getURL("http://www.gmail.com/", "gmailLogin", params);
 }
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 // this section is for the actual WebScreens methods
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-WebScreens.prototype.processURL = function (screenURL, methodName, params, event)
+WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
 {
-	//var prop;
-	
-	//this.repl.print("Invoking the processURL method of WebScreens.");
-	
-	//for (prop in params)
-	//{
-	//	this.repl.print("params." + prop + ": " + params[prop]);
-	//}
-	
-	// TODO: somehow use the properties of the event object to determine if the methodName should
-	//       be invoked or not because there are a lot of 'onload' events that get into this
-	//       method but are not the events for which the html is loaded, the other load
-	//       events are for .css, .js, images (.gif, .jpg, etc.) or other related files, the
-	//       methodName should only be invoked for the onload event of the html content
-	//       another URL that sometimes gets loaded is 'about:blank'
-	//for (prop in event)
-	//{
-	//	this.repl.print("event." + prop + ": " + event[prop]);
-	//}
-
-	//event.type: load
-	//event.target: [object XULElement]
-	//this.repl.print("The event.target.location.href URL is: " + event.target.location.href);
-	//event.originalTarget: [object XULElement]
-	//this.repl.print("The event.originalTarget.location.href URL is: " + event.originalTarget.location.href);
-	//event.currentTarget: [object XULDocument]
-	//this.repl.print("The event.currentTarget.location.href URL is: " + event.currentTarget.location.href);
-	//event.explicitOriginalTarget: [object XULElement]
-	//this.repl.print("The event.explicitOriginalTarget.location.href URL is: " + event.explicitOriginalTarget.location.href);
-	
-	// DONE: use eval method to invoke the methodName
-	//this.repl.print("The event.target URL is: " + event.target);
-	//this.repl.print("The event.target.location URL is: " + event.target.location);
-	//this.repl.print("The event.target.location.href URL is: " + event.target.location.href);
-	if (event.target != undefined && event.target.location != undefined)
-	{
-		// TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
-		
-		return eval("this." + methodName + "(screenURL, \"" + event.target.location.href + "\", params);");
-	}
-	else
-	{
-		return undefined;
-	}
+	return (methodName === "gmailLogin" && screenURL.indexOf("/www.gmail.com") !== -1 && loadedURL.indexOf("www.google.com/accounts/ServiceLogin") !== -1);
 };
 
 
-WebScreens.prototype.gmail = function (screenURL, loadedURL, params)
+WebScreens.prototype.gmailLogin = function (screenURL, loadedURL, params)
 {
-	this.repl.print("From inside the gmail method screenURL: " + screenURL);
-	this.repl.print("From inside the gmail method loadedURL: " + loadedURL);
-	this.repl.print("From inside the gmail method params: " + params);
+	var screenResponse, mouseClick;
 	
-	var screenResponse = {};
-	screenResponse.isDone = true;
+	if (this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Email') && 
+	   this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Passwd') &&
+	   this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('PersistentCookie') &&
+	   this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('signIn'))
+	{
+		this.repl.print("__________Method 'gmailLogin' invoked: " + screenURL + " :: " + loadedURL);
+		
+		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Email').value = params.username;
+		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Passwd').value = params.password;
+	
+		// make sure this checkbox is unchecked
+		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('PersistentCookie').checked = params.PersistentCookie;
+		
+		// DONE: construct a mouseClick for the signIn button
+		mouseClick = this.domWindow.document.createEvent("MouseEvents");
+		mouseClick.initMouseEvent('click', true, true, this.domWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('signIn').dispatchEvent(mouseClick);
+		
+		screenResponse = {};
+		screenResponse.isDone = true;
+		screenResponse.nextScreenMethod = "gmailEmailList";
+	}
 	
 	return screenResponse;
 };
