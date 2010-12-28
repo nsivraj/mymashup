@@ -34,7 +34,7 @@ function startTest()
 	params.password = "mymashup";
 	params.PersistentCookie = false;
 	
-	return globalURLHandler.getURL("http://www.gmail.com/", "gmailLogin", params);
+	return globalURLHandler.webScreens.gotoNextURL("http://www.gmail.com/", "gmailLogin", params, true);
 }
 
 
@@ -51,29 +51,26 @@ WebScreens.prototype.gmailLogin = function (screenURL, loadedURL, params)
 {
 	var screenResponse, mouseClick;
 	
-	if (this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Email') && 
-	   this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Passwd') &&
-	   this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('PersistentCookie') &&
-	   this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('signIn'))
+	if (this.inputsExist(this.domWindow, 'gaia_loginform', ['Email', 'Passwd', 'PersistentCookie', 'signIn']))
 	{
 		this.repl.print("__________Method 'gmailLogin' invoked: " + screenURL + " :: " + loadedURL);
 		
-		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Email').value = params.username;
-		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('Passwd').value = params.password;
-	
-		// make sure this checkbox is unchecked
-		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('PersistentCookie').checked = params.PersistentCookie;
+		this.getFormInput(this.domWindow, 'gaia_loginform', 'Email').value = params.username;
+		this.getFormInput(this.domWindow, 'gaia_loginform', 'Passwd').value = params.password;
+		this.getFormInput(this.domWindow, 'gaia_loginform', 'PersistentCookie').checked = params.PersistentCookie;
+
+		// TODO: this is where the logic goes to setup the WebScreens object for the next URL
+		// that will load as soon as the click event is dispatched below
 		
-		// DONE: construct a mouseClick for the signIn button
-		mouseClick = this.domWindow.document.createEvent("MouseEvents");
-		mouseClick.initMouseEvent('click', true, true, this.domWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-		this.domWindow.document.forms.namedItem('gaia_loginform').elements.namedItem('signIn').dispatchEvent(mouseClick);
-		
-		screenResponse = {};
-		screenResponse.isDone = true;
-		screenResponse.nextScreenMethod = "gmailEmailList";
+		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 'gaia_loginform', 'signIn'));
 	}
 	
+	// When the click event needs to have a handler for when it is loaded then
+	// we will need to comment out the next three lines of code
+	screenResponse = {};
+	screenResponse.isDone = true;
+	screenResponse.chromeWin = this.chromeWin;
+
 	return screenResponse;
 };
 

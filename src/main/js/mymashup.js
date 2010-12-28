@@ -49,8 +49,8 @@ function loadScreens(whichScreens)
 function reloadScript()
 {
 	repl.loadInit();
-	repl.loadScreens("test");
-	repl.startTest();
-	//repl.loadScreens("bsa");
-	//repl.loadMBCounselors();
+	//repl.loadScreens("test");
+	//repl.startTest();
+	repl.loadScreens("bsa");
+	repl.loadMBCounselors();
 }

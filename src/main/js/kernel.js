@@ -25,17 +25,47 @@ function WebScreens(handler)
 {
 	this.handler = handler;
 	this.repl = handler.repl;
-	this.chromeWin = handler.origChromeWin;
-	this.domWindow = handler.origDomWindow;
+	this.origChromeWin = this.repl._workContext.window;
+	this.origDomWindow = this.repl._workContext.content.window;
+	this.chromeWin = this.origChromeWin;
+	this.domWindow = this.origDomWindow;
+	this.params = {};
+	this.currentScreenURL = "";
+	this.currentScreenMethod = "";
 
-	this.processURL = function (screenURL, methodName, params, event)
+	this.gotoNextURL = function (screenURL, screenMethod, params, useScreenURL)
+	{
+		this.params = params;
+		this.currentScreenURL = screenURL;
+		this.currentScreenMethod = screenMethod;
+		
+		this.handler.addEventListener(this.chromeWin);
+		
+		// this method basically does an HTTP GET of the screenURL
+		// in order to start the sequence of screens, it causes
+		// the onloadHandler below to get invoked after the
+		// screenURL loads
+		//this.repl.print("Setting this.domWindow.location.href to: " + screenURL);
+		//this.repl.print("this.domWindow is: " + this.domWindow);
+		if (useScreenURL)
+		{
+			this.domWindow.location.href = screenURL;
+		}
+		
+		// this method needs to return a specific kind of object
+		return {};
+	};
+
+	this.processURL = function (event)
 	{
 		// TODO: for any given "event" parameter, we need to make sure
 		// that this processURL method is only invoked once or the side
 		// effects could be undesireable!!!!!
 		
 		
-		var screenResponse;
+		var screenResponse, screenURL = this.currentScreenURL,
+		    methodName = this.currentScreenMethod, params = this.params;
+		
 		
 		// THIS NEXT if STATEMENT IS FOR DEBUG
 //		if (event.target !== undefined && event.target.location !== undefined)
@@ -56,15 +86,14 @@ function WebScreens(handler)
 		// DONE: use eval method to invoke the methodName
 		//this.repl.print("The event.target URL is: " + event.target);
 		//this.repl.print("The event.target.location URL is: " + event.target.location);
-		//this.repl.print("The event.target.location.href URL is: " + event.target.location.href);
 		//this.repl.print("The event.type is: " + event.type);
+		//this.repl.print("The event.target.location.href URL is: " + event.target.location.href);
 
 		// THIS STATEMENT IS FOR DEBUG
 		//this.handler.printEvent(event);
 		if (event.target !== undefined && event.target.location !== undefined &&
-		    "DOMContentLoaded" === event.type && event.invokedProcessURL === undefined)
+		    "DOMContentLoaded" === event.type)
 		{
-			event.invokedProcessURL = true;
 			if (this.allowMethod(methodName, screenURL, event.target.location.href, params))
 			{
 				// TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
@@ -75,7 +104,52 @@ function WebScreens(handler)
 		return screenResponse;
 	};
 
-
+	this.checkMethodRequest = function (reqMethodName, methodNames, reqScreenURL, screenURLSnippet, reqLoadedURL, loadedURLSnippet)
+	{
+		//this.repl.print("inside checkMethodRequest: " + reqMethodName + " :: " + methodName[0]);
+		var nameIndex;
+		for (nameIndex in methodNames)
+		{
+			if (reqMethodName === methodNames[nameIndex])
+			{
+				return reqScreenURL.indexOf(screenURLSnippet) !== -1 && reqLoadedURL.indexOf(loadedURLSnippet) !== -1;
+			}
+		}
+		
+		return false;
+	};
+	
+	this.dispatchClickEvent = function (theDOMWindow, toClick)
+	{
+		// NOTE: do not use the this.currentScreenURL or the this.currentScreenMethod
+		// or the this.params objects inside this method as those objects are
+		// being set for the next page by he time this method is called
+		
+		var mouseClick = theDOMWindow.document.createEvent("MouseEvents");
+		mouseClick.initMouseEvent('click', true, true, theDOMWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+		toClick.dispatchEvent(mouseClick);
+	};
+	
+	this.getFormInput = function (theDOMWindow, formName, inputName)
+	{
+		//this.repl.print("inside getFormInput: " + formName + "." + inputName);
+		return theDOMWindow.document.forms.namedItem(formName).elements.namedItem(inputName);
+	};
+	
+	this.inputsExist = function (theDOMWindow, formName, inputNames)
+	{
+		//this.repl.print("inside inputsExist: " + inputNames.length);
+		var inputIndex;
+		for (inputIndex in inputNames)
+		{
+			if (!(this.getFormInput(theDOMWindow, formName, inputNames[inputIndex])))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	};
 }
 
 
@@ -94,40 +168,19 @@ var domContentCallback = function (event)
 };
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// this section is the definition of the LoadURL object
+// this section is the definition of the UrlHandler object
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 function UrlHandler(repl)
 {
 	this.repl = repl;
-	this.origChromeWin = repl._workContext.window;
-	this.origDomWindow = repl._workContext.content.window;
-	this.params = {};
-	this.currentScreenURL = "";
-	this.currentScreenMethod = "";
 	this.webScreens = new WebScreens(this);
 	
-	this.getURL = function (screenURL, screenMethod, params)
-	{
-		this.params = params;
-		this.currentScreenURL = screenURL;
-		this.currentScreenMethod = screenMethod;
-		
-		this.addEventListener();
-		
-		// this method basically does an HTTP GET of the screenURL
-		// in order to start the sequence of screens, it causes
-		// the onloadHandler below to get invoked after the
-		// screenURL loads
-		//this.repl.print("Setting this.origDomWindow.location.href to: " + screenURL);
-		//this.repl.print("this.origDomWindow is: " + this.origDomWindow);
-		this.origDomWindow.location.href = screenURL;
-		
-		// this method needs to return a specific kind of object
-		return {};
-	};
-
 	this.onloadHandler = function (event)
 	{
+		// TODO: for any given "event" parameter, we need to make sure
+		// that the below processURL method is only invoked once or the side
+		// effects could be undesireable!!!!!
+
 		var screenResponse;
 		
 		// this method is invoked on a callback after each web page is
@@ -139,14 +192,14 @@ function UrlHandler(repl)
 		
 		// loop over the properties of the event object to see what it's properties are
 		
-		this.addEventListener();
+		//this.addEventListener();
 		
 		// TODO: now you can finally invoke the screenMethod method
 		// of the this.webScreens object
 		// the this.webScreens object is responsible for determining
 		// what the next page is and returning that information here!!!!
 		//this.repl.print("Here 1");
-		screenResponse = this.webScreens.processURL(this.currentScreenURL, this.currentScreenMethod, this.params, event);
+		screenResponse = this.webScreens.processURL(event);
 		//this.repl.print("Here 2");
 		
 		
@@ -156,39 +209,31 @@ function UrlHandler(repl)
 		// or if no other URL should be loaded
 		if (screenResponse !== undefined)
 		{
-			this.repl.print("processURL returned screenResponse as: (isDone," + screenResponse.isDone + ") :: (nextScreenMethod," + screenResponse.nextScreenMethod + ")");
-
-			this.currentScreenMethod = screenResponse.nextScreenMethod;
-			//this.currentScreenURL = screenResponse.nextScreenURL;
-			//this.screenQueue.addAll(screenResponse.queue);
+			this.repl.print("processURL returned screenResponse as: (isDone," + screenResponse.isDone + ") :: (chromeWin," + screenResponse.chromeWin + ")");
 
 			if (screenResponse.isDone)
 			{
-				this.removeEventListener();
+				this.removeEventListener(screenResponse.chromeWin);
 			}
 		}
-		else
-		{
-			this.removeEventListener();
-		}
 		
 	};
 	
 	
-	this.addEventListener = function ()
+	this.addEventListener = function (theChromeWin)
 	{
 		// TODO: loop over all of the windows that are open and add the onloadCallback as an event listener
 		
-		this.origChromeWin.document.addEventListener('DOMContentLoaded', domContentCallback, true);
-		//this.origChromeWin.document.addEventListener('load', onloadCallback, true);
+		theChromeWin.document.addEventListener('DOMContentLoaded', domContentCallback, true);
+		//theChromeWin.document.addEventListener('load', onloadCallback, true);
 	};
 	
-	this.removeEventListener = function ()
+	this.removeEventListener = function (theChromeWin)
 	{
 		// TODO: loop over all of the windows that are open and add the onloadCallback as an event listener
 		
-		this.origChromeWin.document.removeEventListener('DOMContentLoaded', domContentCallback, true);
-		//this.origChromeWin.document.removeEventListener('load', onloadCallback, true);
+		theChromeWin.document.removeEventListener('DOMContentLoaded', domContentCallback, true);
+		//theChromeWin.document.removeEventListener('load', onloadCallback, true);
 	};
 	
 	this.printEvent  = function (event)
