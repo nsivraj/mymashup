@@ -3,6 +3,7 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /*jslint nomen: false, debug: false,
     evil: false, onevar: true */
+/*global Components: false */
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -32,6 +33,7 @@ function WebScreens(handler)
 	this.params = {};
 	this.currentScreenURL = "";
 	this.currentScreenMethod = "";
+	this.prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"].getService(Components.interfaces.nsIPromptService);  
 
 	this.gotoNextURL = function (screenURL, screenMethod, params, useScreenURL)
 	{
@@ -94,8 +96,10 @@ function WebScreens(handler)
 		if (event.target !== undefined && event.target.location !== undefined &&
 		    "DOMContentLoaded" === event.type)
 		{
-			if (this.allowMethod(methodName, screenURL, event.target.location.href, params))
+			var isAllowed = this.allowMethod(methodName, screenURL, event.target.location.href, params);
+			if(isAllowed)
 			{
+				this.repl.print("TRUE :: checking method '" + methodName + "' and screenURL '" + screenURL + "' and loadedURL '" + event.target.location.href + "'");
 				// TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
 				screenResponse = eval("this." + methodName + "(screenURL, \"" + event.target.location.href + "\", params);");
 			}
@@ -104,9 +108,10 @@ function WebScreens(handler)
 		return screenResponse;
 	};
 
+	
 	this.checkMethodRequest = function (reqMethodName, methodNames, reqScreenURL, screenURLSnippet, reqLoadedURL, loadedURLSnippet)
 	{
-		//this.repl.print("inside checkMethodRequest: " + reqMethodName + " :: " + methodName[0]);
+		//this.repl.print("inside checkMethodRequest: " + reqMethodName + " :: " + methodNames[0] + " :: " + reqScreenURL + " :: " + reqLoadedURL);
 		var nameIndex;
 		for (nameIndex in methodNames)
 		{
@@ -118,6 +123,95 @@ function WebScreens(handler)
 		
 		return false;
 	};
+	
+	
+	this.promptForInput = function (theDOMWindow, promptText, defaultValue)
+	{
+		if (!defaultValue)
+		{
+			defaultValue = '';
+		}
+		
+		var check, input, result;
+		
+		check = {value: false};                  // default the checkbox to false  
+		input = {value: defaultValue};                  // default the edit field to Bob  
+		result = this.prompts.prompt(theDOMWindow, "Data Input", promptText, input, null, check);
+		
+		// result is true if OK is pressed, false if Cancel.
+		// input.value holds the value of the edit field if "OK" was pressed. 
+		
+		return (result ? input.value : defaultValue);
+	};
+	
+	
+	this.promptForPassword = function (theDOMWindow, promptText, defaultValue)
+	{
+		if (!defaultValue)
+		{
+			defaultValue = '';
+		}
+		
+		var password, check, result;
+		
+		password = {value: defaultValue};              // default the password to pass  
+		check = {value: false};                   // default the checkbox to false
+		result = this.prompts.promptPassword(theDOMWindow, "Password", promptText, password, null, check);  
+
+		// result is true if OK was pressed, false if cancel was pressed.
+		// password.value is set if OK was pressed. The checkbox is not displayed. 
+		
+		return (result ? password.value : defaultValue);
+	};
+	
+	
+	this.promptForUsernameAndPassword = function (theDOMWindow, promptText, defaultUser, defaultPass)
+	{
+		if (!defaultUser)
+		{
+			defaultUser = '';
+		}
+		
+		if (!defaultPass)
+		{
+			defaultPass = '';
+		}
+
+		var username, password, check, result;
+
+		username = {value: defaultUser};              // default the username to user  
+		password = {value: defaultPass};              // default the password to pass  
+		check = {value: false};                   // default the checkbox to false  
+		result = this.prompts.promptUsernameAndPassword(theDOMWindow, "Username and Password", promptText,  
+		                                                username, password, "Save", check);
+		
+		// result is true if OK was pressed, false if cancel was pressed.
+		// username.value, password.value, and check.value are set if OK was pressed.
+		
+		return (result ? [username.value, password.value] : [defaultUser, defaultPass]);
+	};
+	
+	
+	this.selectInput = function (theDOMWindow, promptText, items, defaultValue)
+	{
+		if (!defaultValue)
+		{
+			defaultValue = '';
+		}
+		
+		var selected = {}, result;
+		
+		//var items = ["Hello", "Welcome", "Howdy", "Hi", ":)"]; // list items  
+		result = this.prompts.select(theDOMWindow, "Select Input", promptText, items.length,  
+				                     items, selected);  
+		
+		// result is true if OK was pressed, false if cancel.
+		// selected is the index of the item array  
+		// that was selected. Get the item using items[selected.value].
+		
+		return (result ? items[selected.value] : defaultValue);
+	};
+	
 	
 	this.dispatchClickEvent = function (theDOMWindow, toClick)
 	{
@@ -207,10 +301,10 @@ function UrlHandler(repl)
 		// the screenResponse returned from processURL controls whether
 		// a URL from the queue is used or if a button was clicked on
 		// or if no other URL should be loaded
+		//this.repl.print("processURL returned screenResponse as: " + screenResponse);
 		if (screenResponse !== undefined)
 		{
 			this.repl.print("processURL returned screenResponse as: (isDone," + screenResponse.isDone + ") :: (chromeWin," + screenResponse.chromeWin + ")");
-
 			if (screenResponse.isDone)
 			{
 				this.removeEventListener(screenResponse.chromeWin);

@@ -35,6 +35,7 @@ function loadMBCounselors()
 	return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/logon.asp?orgkey=", "meritBadgeLogin", params, true);
 }
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 //this section is for the actual WebScreens methods
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -42,17 +43,17 @@ WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, p
 {
 	return (
 	    this.checkMethodRequest(
-	        methodName, ["meritBadgeLogin"],
-	    	screenURL, "/utahscouts.doubleknot.com/rosters/logon.asp",
-	    	loadedURL, "/utahscouts.doubleknot.com/rosters/logon.asp"
+            methodName, ["meritBadgeLogin"],
+            screenURL, "/utahscouts.doubleknot.com/rosters/logon.asp",
+            loadedURL, "/utahscouts.doubleknot.com/rosters/logon.asp"
 	    ) || this.checkMethodRequest(
-		        methodName, ["gotoMBAdmin"],
-		    	screenURL, "",
-		    	loadedURL, "/utahscouts.doubleknot.com/rosters/default.asp"
+            methodName, ["gotoMBAdmin"],
+            screenURL, "",
+            loadedURL, "/utahscouts.doubleknot.com/rosters/default.asp"
 	    ) || this.checkMethodRequest(
-		        methodName, ["mbAdmin"],
-		    	screenURL, "/utahscouts.doubleknot.com/rosters/MBdefault.asp",
-		    	loadedURL, "/utahscouts.doubleknot.com/rosters/MBdefault.asp"
+            methodName, ["mbAdmin"],
+            screenURL, "/utahscouts.doubleknot.com/rosters/MBdefault.asp",
+            loadedURL, "/utahscouts.doubleknot.com/rosters/MBdefault.asp"
 		)
 	);
 };
@@ -60,17 +61,18 @@ WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, p
 
 WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 {
-	var mouseClick;
-	
 	if (this.inputsExist(this.domWindow, 'LogonForm', ['UserName', 'Password', 'savePWD', 'Btn1']))
 	{
-		this.repl.print("__________Method 'meritBadgeLogin' invoked: " + screenURL + " :: " + loadedURL);
+		var mouseClick, creds;
 		
-		this.getFormInput(this.domWindow, 'LogonForm', 'UserName').value = this.promptForInput(this.domWindow, 'UserName');
-		this.getFormInput(this.domWindow, 'LogonForm', 'Password').value = this.promptForInput(this.domWindow, 'Password');
+		this.repl.print("__________Method 'meritBadgeLogin' invoked: '" + screenURL + "' :: '" + loadedURL + "'");
+		
+		creds = this.promptForUsernameAndPassword(this.domWindow, 'Please enter your Username and Password', this.getFormInput(this.domWindow, 'LogonForm', 'UserName').value);
+		this.getFormInput(this.domWindow, 'LogonForm', 'UserName').value = creds[0]; //this.promptForInput(this.domWindow, 'UserName', this.getFormInput(this.domWindow, 'LogonForm', 'UserName').value);
+		this.getFormInput(this.domWindow, 'LogonForm', 'Password').value = creds[1]; //this.promptForInput(this.domWindow, 'Password');
 		this.getFormInput(this.domWindow, 'LogonForm', 'savePWD').checked = params.savePWD;
 
-		// TODO: this is where the logic goes to setup the WebScreens object for the next URL
+		// DONE: this is where the logic goes to setup the WebScreens object for the next URL
 		// that will load as soon as the click event is dispatched below
 		this.gotoNextURL("", "gotoMBAdmin", params, false);
 		
@@ -86,8 +88,7 @@ WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 // https://utahscouts.doubleknot.com/rosters/default.asp?UserName=NORMAN.JARVIS@GMAIL.COM
 WebScreens.prototype.gotoMBAdmin = function (screenURL, loadedURL, params)
 {
-	this.repl.print("__________Method 'gotoMBAdmin' invoked: " + screenURL + " :: " + loadedURL);
-	
+	this.repl.print("__________Method 'gotoMBAdmin' invoked: '" + screenURL + "' :: '" + loadedURL + "'");
 	this.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params, true);
 };
 
@@ -95,6 +96,22 @@ WebScreens.prototype.gotoMBAdmin = function (screenURL, loadedURL, params)
 //https://utahscouts.doubleknot.com/rosters/MBdefault.asp
 WebScreens.prototype.mbAdmin = function (screenURL, loadedURL, params)
 {
-	this.repl.print("__________Method 'mbAdmin' invoked: " + screenURL + " :: " + loadedURL);
+	if (this.inputsExist(this.domWindow, 0, ['OrgKey', 'DoWhat', 'ActiveCounselorsOnly', 'Btn']))
+	{
+		var mouseClick;
+		
+		this.repl.print("__________Method 'mbAdmin' invoked: '" + screenURL + "' :: '" + loadedURL + "'");
+	
+		this.gotoNextURL("", "counselorAdmin", params, false);
+	}
+	else
+	{
+		this.repl.print("mbAdmin: some of the inputs do not exist!!");
+	}
+	
+	//screenResponse = {};
+	//screenResponse.isDone = true;
+	//screenResponse.chromeWin = this.chromeWin;
+	//return screenResponse;
 };
 

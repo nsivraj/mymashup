@@ -30,8 +30,6 @@ function startTest()
 {
 	var params = {};
 	params.invokedFromMethod = "startTest";
-	params.username = "zoppie";
-	params.password = "mymashup";
 	params.PersistentCookie = false;
 	
 	return globalURLHandler.webScreens.gotoNextURL("http://www.gmail.com/", "gmailLogin", params, true);
@@ -43,20 +41,28 @@ function startTest()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
 {
-	return (methodName === "gmailLogin" && screenURL.indexOf("/www.gmail.com") !== -1 && loadedURL.indexOf("www.google.com/accounts/ServiceLogin") !== -1);
+	//return (methodName === "gmailLogin" && screenURL.indexOf("/www.gmail.com") !== -1 && loadedURL.indexOf("www.google.com/accounts/ServiceLogin") !== -1);
+	return (
+        this.checkMethodRequest(
+            methodName, ["gmailLogin"],
+            screenURL, "/www.gmail.com",
+            loadedURL, "www.google.com/accounts/ServiceLogin"
+		)
+    );
 };
 
 
 WebScreens.prototype.gmailLogin = function (screenURL, loadedURL, params)
 {
-	var screenResponse, mouseClick;
+	var screenResponse, mouseClick, creds;
 	
 	if (this.inputsExist(this.domWindow, 'gaia_loginform', ['Email', 'Passwd', 'PersistentCookie', 'signIn']))
 	{
 		this.repl.print("__________Method 'gmailLogin' invoked: " + screenURL + " :: " + loadedURL);
 		
-		this.getFormInput(this.domWindow, 'gaia_loginform', 'Email').value = params.username;
-		this.getFormInput(this.domWindow, 'gaia_loginform', 'Passwd').value = params.password;
+		creds = this.promptForUsernameAndPassword(this.domWindow, 'Please enter your Username and Password', this.getFormInput(this.domWindow, 'gaia_loginform', 'Email').value);
+		this.getFormInput(this.domWindow, 'gaia_loginform', 'Email').value = creds[0]; //this.promptForInput(this.domWindow, 'Email', this.getFormInput(this.domWindow, 'gaia_loginform', 'Email').value);
+		this.getFormInput(this.domWindow, 'gaia_loginform', 'Passwd').value = creds[1]; //this.promptForInput(this.domWindow, 'Passwd');
 		this.getFormInput(this.domWindow, 'gaia_loginform', 'PersistentCookie').checked = params.PersistentCookie;
 
 		// TODO: this is where the logic goes to setup the WebScreens object for the next URL
