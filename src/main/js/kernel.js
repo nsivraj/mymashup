@@ -41,6 +41,7 @@ function WebScreens(handler)
 		this.currentScreenURL = screenURL;
 		this.currentScreenMethod = screenMethod;
 		
+		this.repl.print("Going to URL '" + screenURL + "' with method '" + screenMethod + "'.");
 		this.handler.addEventListener(this.chromeWin);
 		
 		// this method basically does an HTTP GET of the screenURL
@@ -65,7 +66,7 @@ function WebScreens(handler)
 		// effects could be undesireable!!!!!
 		
 		
-		var screenResponse, screenURL = this.currentScreenURL,
+		var isAllowed, screenResponse, screenURL = this.currentScreenURL,
 		    methodName = this.currentScreenMethod, params = this.params;
 		
 		
@@ -96,8 +97,8 @@ function WebScreens(handler)
 		if (event.target !== undefined && event.target.location !== undefined &&
 		    "DOMContentLoaded" === event.type)
 		{
-			var isAllowed = this.allowMethod(methodName, screenURL, event.target.location.href, params);
-			if(isAllowed)
+			isAllowed = this.allowMethod(methodName, screenURL, event.target.location.href, params);
+			if (isAllowed)
 			{
 				this.repl.print("TRUE :: checking method '" + methodName + "' and screenURL '" + screenURL + "' and loadedURL '" + event.target.location.href + "'");
 				// TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
@@ -219,15 +220,129 @@ function WebScreens(handler)
 		// or the this.params objects inside this method as those objects are
 		// being set for the next page by he time this method is called
 		
+		//this.repl.print("Inside dispatchClickEvent 1");
 		var mouseClick = theDOMWindow.document.createEvent("MouseEvents");
+		//this.repl.print("Inside dispatchClickEvent 2");
 		mouseClick.initMouseEvent('click', true, true, theDOMWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+		//this.repl.print("Inside dispatchClickEvent 3");
 		toClick.dispatchEvent(mouseClick);
+		//this.repl.print("Inside dispatchClickEvent 4");
 	};
+	
+	
+	this.handleSelect = function (theDOMWindow, formName, inputName, selIndex)
+	{
+		var selIndexIsInt = (typeof selIndex === 'number'),
+		    selectElem, optionIndex;
+
+		//this.repl.print("Inside handleSelect 1: " + selIndex);
+		selectElem = this.getFormInput(theDOMWindow, formName, inputName);
+		//this.repl.print("Inside handleSelect 2: " + selectElem);
+		if (selIndexIsInt)
+		{
+			selectElem.selectedIndex = selIndex;
+		}
+		else
+		{
+			//this.repl.print("Inside handleSelect 2.5.1: " + selectElem.options);
+			//this.repl.print("Inside handleSelect 2.5.2: " + selectElem.options.namedItem(selIndex));
+			if (selectElem.options.namedItem(selIndex))
+			{
+				// now find the selIndex in the array of options
+				selectElem.selectedIndex = selectElem.options.namedItem(selIndex).index;
+			}
+			else
+			{
+				// loop through the options list and find the index of
+				// the one with the value equal to selIndex
+				//this.repl.print("Inside handleSelect 2.5.3: " + selectElem.options);
+				for (optionIndex = 0; optionIndex < selectElem.length; optionIndex += 1)
+				{
+					//this.repl.print("Inside handleSelect 2.5.4: " + optionIndex);
+					if (selectElem.options[optionIndex].value === selIndex)
+					{
+						//this.repl.print("Inside handleSelect 2.5.5: " + optionIndex);
+						selectElem.selectedIndex = optionIndex;
+						break;
+					}
+				}
+			}
+		}
+		//this.repl.print("Inside handleSelect 3.");
+		this.dispatchClickEvent(theDOMWindow, selectElem);
+		//this.repl.print("Inside handleSelect 4.");
+	};
+	
+		
+	this.handleRadioButton = function (theDOMWindow, formName, groupName, radioValue, isChecked)
+	{
+		var radioElem,
+		    radioButtons = this.getFormGroup(theDOMWindow, formName, groupName);
+		
+		for (radioElem in radioButtons)
+		{
+			if (radioElem.value === radioValue)
+			{
+				radioElem.checked = isChecked;
+				this.dispatchClickEvent(theDOMWindow, radioElem);
+				break;
+			}
+		}
+	};
+	
+	
+	this.getFormGroup = function (theDOMWindow, formName, groupName)
+	{
+		var formNameIsInt = (typeof formName === 'number'),
+	        formGroup;
+		
+		if (formNameIsInt)
+		{
+			formGroup = theDOMWindow.document.forms.item(formName)[groupName];
+		}
+		else
+		{
+			formGroup = theDOMWindow.document.forms.namedItem(formName)[groupName];
+		}
+		
+		return formGroup;
+	};
+	
 	
 	this.getFormInput = function (theDOMWindow, formName, inputName)
 	{
-		//this.repl.print("inside getFormInput: " + formName + "." + inputName);
-		return theDOMWindow.document.forms.namedItem(formName).elements.namedItem(inputName);
+		var formNameIsInt = (typeof formName === 'number'),
+		    inputNameIsInt = (typeof inputName === 'number'),
+		    formInputElement;
+		
+		//this.repl.print("formNameIsInt: " + formNameIsInt + " :: inputNameIsInt: " + inputNameIsInt);
+		if (!formNameIsInt && !inputNameIsInt)
+		{
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.namedItem(" + formName + "): " + theDOMWindow.document.forms.namedItem(formName));
+			formInputElement = theDOMWindow.document.forms.namedItem(formName).elements.namedItem(inputName);
+		}
+		else if (formNameIsInt && !inputNameIsInt)
+		{
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.item(" + formName + "): " + theDOMWindow.document.forms.item(formName));
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.item(" + formName + ").elements: " + theDOMWindow.document.forms.item(formName).elements);
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.item(" + formName + ").elements.namedItem(" + inputName+ "): " + theDOMWindow.document.forms.item(formName).elements.namedItem(inputName));
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.item(" + formName + ").elements[" + inputName+ "]: " + theDOMWindow.document.forms.item(formName).elements[inputName]);
+
+			formInputElement = theDOMWindow.document.forms.item(formName).elements.namedItem(inputName);
+		}
+		else if (!formNameIsInt && inputNameIsInt)
+		{
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.namedItem(" + formName + "): " + theDOMWindow.document.forms.namedItem(formName));
+			formInputElement = theDOMWindow.document.forms.namedItem(formName).elements.item(inputName);
+		}
+		else if (formNameIsInt && inputNameIsInt)
+		{
+			//this.repl.print("inside getFormInput theDOMWindow.document.forms.item(" + formName + "): " + theDOMWindow.document.forms.item(formName));
+			formInputElement = theDOMWindow.document.forms.item(formName).elements.item(inputName);
+		}
+		
+		//this.repl.print("inside getFormInput: " + formName + "." + inputName + " :: " + formInputElement);
+		return formInputElement;
 	};
 	
 	this.inputsExist = function (theDOMWindow, formName, inputNames)
@@ -243,6 +358,18 @@ function WebScreens(handler)
 		}
 		
 		return true;
+	};
+	
+	this.handleError = function (methodName, params)
+	{
+		this.repl.print(methodName + ": some of the inputs do not exist!!");
+		this.gotoNextURL("", "errorInScreen", params, false);
+		
+		var screenResponse = {};
+		screenResponse.isDone = true;
+		screenResponse.chromeWin = this.chromeWin;
+		
+		return screenResponse;
 	};
 }
 
