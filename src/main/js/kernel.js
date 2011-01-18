@@ -35,7 +35,7 @@ function WebScreens(handler)
 	this.currentScreenMethod = "";
 	this.prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"].getService(Components.interfaces.nsIPromptService);  
 
-	this.gotoNextURL = function (screenURL, screenMethod, params, useScreenURL)
+	this.gotoNextURL = function (screenURL, screenMethod, params)
 	{
 		this.params = params;
 		this.currentScreenURL = screenURL;
@@ -50,7 +50,7 @@ function WebScreens(handler)
 		// screenURL loads
 		//this.repl.print("Setting this.domWindow.location.href to: " + screenURL);
 		//this.repl.print("this.domWindow is: " + this.domWindow);
-		if (useScreenURL)
+		if (screenURL.length > 0)
 		{
 			this.domWindow.location.href = screenURL;
 		}
@@ -363,7 +363,7 @@ function WebScreens(handler)
 	this.handleError = function (methodName, params)
 	{
 		this.repl.print(methodName + ": some of the inputs do not exist!!");
-		this.gotoNextURL("", "errorInScreen", params, false);
+		this.gotoNextURL("", "errorInScreen", params);
 		
 		var screenResponse = {};
 		screenResponse.isDone = true;

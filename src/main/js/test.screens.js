@@ -32,7 +32,7 @@ function startTest()
 	params.invokedFromMethod = "startTest";
 	params.PersistentCookie = false;
 	
-	return globalURLHandler.webScreens.gotoNextURL("http://www.gmail.com/", "gmailLogin", params, true);
+	return globalURLHandler.webScreens.gotoNextURL("http://www.gmail.com/", "gmailLogin", params);
 }
 
 
@@ -70,14 +70,10 @@ WebScreens.prototype.gmailLogin = function (screenURL, loadedURL, params)
 		
 		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 'gaia_loginform', 'signIn'));
 	}
-	
-	// When the click event needs to have a handler for when it is loaded then
-	// we will need to comment out the next three lines of code
-	screenResponse = {};
-	screenResponse.isDone = true;
-	screenResponse.chromeWin = this.chromeWin;
-
-	return screenResponse;
+	else
+	{
+		return this.handleError("gmailLogin", params);
+	}
 };
 
 

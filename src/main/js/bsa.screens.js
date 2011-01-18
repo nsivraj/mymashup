@@ -51,12 +51,12 @@ function loadMBCounselors()
 	params.strCity = "Provo";
 	params.strState = "UT";
 	params.dblZip = "84601";
-	this.getFormInput(this.domWindow, 1, 'strWorkPhone').value = params.strWorkPhone; // (801) 377-1663
-	this.getFormInput(this.domWindow, 1, 'strHomePhone').value = params.strHomePhone; // (801) 377-1663
-	this.getFormInput(this.domWindow, 1, 'dtmTrained').value = params.dtmTrained; // what is the date format?
-	this.getFormInput(this.domWindow, 1, 'strRegNumber').value = params.strRegNumber;
-	this.getFormInput(this.domWindow, 1, 'dtmUpdated').value = params.dtmTrained; // what is the date format?
-	this.getFormInput(this.domWindow, 1, 'dtmExpires').value = params.dtmTrained; // what is the date format?
+	params.strWorkPhone = "(801) 884-4236";
+	params.strHomePhone = "(801) 377-1663";
+	params.dtmTrained = "01/01/2010"; // what is the date format?
+	params.strRegNumber = "42215398";
+	params.dtmTrained = "01/01/2010"; // what is the date format?
+	params.dtmTrained = "01/01/2010"; // what is the date format?
 	
 	/* One of these is the strUnit
                 <option  value="Community Units">Community Units</option>
@@ -79,17 +79,17 @@ function loadMBCounselors()
 
 				<option Selected  value="Provo West">Provo West</option>
 	 */
-	this.handleSelect(this.domWindow, 1, 'strUnit', params.strUnit);
-	this.getFormInput(this.domWindow, 1, 'otherstrUnit').value = params.otherstrUnit;
-	this.getFormInput(this.domWindow, 1, 'Email').value = params.Email;
-	this.getFormInput(this.domWindow, 1, 'Email2').value = params.Email2;
-	this.getFormInput(this.domWindow, 1, 'Note').value = params.Note;
+	params.strUnit = "Community Units";
+	params.otherstrUnit = ""; // this is a free form text of the unit name if one from the drop down is not correct
+	params.Email = "norman.jarvis@gmail.com";
+	params.Email2 = "";
+	params.Note = "This is a note.";
 	params.ActiveCode = true;
 	params.ShowAddress = true;
 	
-	//return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/logon.asp?orgkey=", "meritBadgeLogin", params, true);
-	//return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params, true);
-	return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBNameList.asp", "counselorAdmin", params, true);
+	//return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/logon.asp?orgkey=", "meritBadgeLogin", params);
+	//return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params);
+	return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBNameList.asp", "counselorAdmin", params);
 }
 
 
@@ -139,11 +139,11 @@ WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 
 		// DONE: this is where the logic goes to setup the WebScreens object for the next URL
 		// that will load as soon as the click event is dispatched below
-		this.gotoNextURL("", "gotoMBAdmin", params, false);
+		this.gotoNextURL("", "gotoMBAdmin", params);
 		
-		this.repl.print("meritBadgeLogin after gotoNextURL: gotoMBAdmin");
+		//this.repl.print("meritBadgeLogin after gotoNextURL: gotoMBAdmin");
 		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 'LogonForm', 'Btn1'));
-		this.repl.print("meritBadgeLogin after dispatchClickEvent: LogonForm.Btn1");
+		//this.repl.print("meritBadgeLogin after dispatchClickEvent: LogonForm.Btn1");
 	}
 	else
 	{
@@ -156,7 +156,7 @@ WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 WebScreens.prototype.gotoMBAdmin = function (screenURL, loadedURL, params)
 {
 	this.repl.print("__________Method 'gotoMBAdmin' invoked: '" + screenURL + "' :: '" + loadedURL + "'");
-	this.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params, true);
+	this.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params);
 };
 
 
@@ -177,7 +177,7 @@ WebScreens.prototype.mbAdmin = function (screenURL, loadedURL, params)
 		this.getFormInput(this.domWindow, 1, 'ActiveCounselorsOnly').checked = params.ActiveCounselorsOnly;
 		//this.repl.print("Got here 4");
 		
-		this.gotoNextURL("", "counselorAdmin", params, false);
+		this.gotoNextURL("", "counselorAdmin", params);
 
 		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 1, 'Btn'));
 	}
@@ -190,7 +190,7 @@ WebScreens.prototype.mbAdmin = function (screenURL, loadedURL, params)
 
 WebScreens.prototype.counselorAdmin = function (screenURL, loadedURL, params)
 {
-	var mouseClick;
+	var mouseClick, anotherCounselor;
 	
 	if (this.inputsExist(this.domWindow, 1, ['CounselorKey', 'DoWhat', 'Btn']))
 	{
@@ -202,9 +202,18 @@ WebScreens.prototype.counselorAdmin = function (screenURL, loadedURL, params)
 		this.handleRadioButton(this.domWindow, 1, 'DoWhat', params.DoWhat_counselorAdmin.value, params.DoWhat_counselorAdmin.checked);
 		//this.repl.print("Got here 3");
 		
-		this.gotoNextURL("", "createAndEditCounselor", params, false);
-
-		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 1, 'Btn'));
+		// set params.CounselorKey to the correct value for the next
+		// counselor as well as all of the other params used in this method
+		anotherCounselor = this.getNextCounselor(params);
+		if (anotherCounselor)
+		{
+			this.gotoNextURL("", "createAndEditCounselor", params);
+			this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 1, 'Btn'));
+		}
+		else
+		{
+			this.gotoNextURL("", "doneWithScreen", params);
+		}
 	}
 	else
 	{
@@ -217,7 +226,7 @@ WebScreens.prototype.counselorAdmin = function (screenURL, loadedURL, params)
 
 WebScreens.prototype.createAndEditCounselor = function (screenURL, loadedURL, params)
 {
-	var mouseClick;
+	var mouseClick, anotherCounselor;
 	
 	if (this.inputsExist(this.domWindow, 1, ['strLastName', 'strFirstName', 'ActiveCode', 'Submit']))
 	{
@@ -235,28 +244,6 @@ WebScreens.prototype.createAndEditCounselor = function (screenURL, loadedURL, pa
 		this.getFormInput(this.domWindow, 1, 'strRegNumber').value = params.strRegNumber;
 		this.getFormInput(this.domWindow, 1, 'dtmUpdated').value = params.dtmTrained; // what is the date format?
 		this.getFormInput(this.domWindow, 1, 'dtmExpires').value = params.dtmTrained; // what is the date format?
-		
-		/* One of these is the strUnit
-                    <option  value="Community Units">Community Units</option>
-
-					<option  value="Provo Central">Provo Central</option>
-
-					<option  value="Provo Grandview">Provo Grandview</option>
-
-					<option  value="Provo Grandview East">Provo Grandview East</option>
-
-					<option  value="Provo Grandview South">Provo Grandview South</option>
-
-					<option  value="Provo North Park">Provo North Park</option>
-
-					<option  value="Provo Parkway">Provo Parkway</option>
-
-					<option  value="Provo South">Provo South</option>
-
-					<option  value="Provo Sunset">Provo Sunset</option>
-
-					<option Selected  value="Provo West">Provo West</option>
-		 */
 		this.handleSelect(this.domWindow, 1, 'strUnit', params.strUnit);
 		this.getFormInput(this.domWindow, 1, 'otherstrUnit').value = params.otherstrUnit;
 		this.getFormInput(this.domWindow, 1, 'Email').value = params.Email;
@@ -265,9 +252,16 @@ WebScreens.prototype.createAndEditCounselor = function (screenURL, loadedURL, pa
 		this.getFormInput(this.domWindow, 1, 'ActiveCode').checked = params.ActiveCode;
 		this.getFormInput(this.domWindow, 1, 'ShowAddress').checked = params.ShowAddress;
 		
-		this.gotoNextURL("", "doneWithScreen", params, false);
+		this.gotoNextURL("", "counselorAdmin", params);
+		
+		// TODO: prompt the user if the data being loaded for this counselor is
+		//       correct (this really needs to be done from the edit screen)
 
+		// TODO: wrap this next method call in an if statement that checks if the user wants to proceed or not
 		//this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 1, 'Submit'));
+		
+		// NOTE: this dispatchClickEvent method call causes the changes to be cancelled
+		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 2, 'Submit'));
 	}
 	else
 	{
@@ -276,4 +270,29 @@ WebScreens.prototype.createAndEditCounselor = function (screenURL, loadedURL, pa
 	
 };
 
+
+WebScreens.prototype.getNextCounselor = function (params)
+{
+	var thereIsAnotherCounselor = false;
+	
+	if(!this.counselorFile)
+	{
+		// TODO: open the file and assign the handle to the this.counselorFile variable
+		
+	}
+	
+	// TODO: read in the next record from the file handle
+	
+	// set the params.CounselorKey and other attributes to the correct values for the next counselor
+	//this.repl.print("getNextCounselor params.didOneCounselor: " + params.didOneCounselor);
+	//if (!params.didOneCounselor)
+	//{
+	//	thereIsAnotherCounselor = true;
+	//	params.didOneCounselor = {};
+	//}
+	
+	// TODO: 1) read the next counselor in from the file
+	
+	return thereIsAnotherCounselor;
+};
 
