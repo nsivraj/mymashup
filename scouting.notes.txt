@@ -1,0 +1,224 @@
+1) Establish what the cannonical format will be for the stored data.
+   This format will be all of the counselor data fields defined in
+   the Double Knot data schema. This is the choice because that is
+   the destination system for all of the data merges we are attempting
+   to do in this effort. Still need to determine the order of the
+   columns, this should follow closely the format established by
+   Arturo Malpica, plus some extra columns to identify meta-data about
+   the data being imported.
+
+
+Double Knot canonical data import fields
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Double Knot Import Field    | Data Owner      | National Export                | National Export                       | National Export                        | National Export                   | Double Knot Export            | Double Knot Export            | Double Knot Export                           |
+from web site               |                 | FortUtah-MCR-09032010-BSA.xlsx | FortUtah-MCR-09032010-ListbyName.xlsx | FortUtah-MCR-09032010-ListbyBadge.xlsx | FortUtah-MCR-09032010-ListAll.txt | DoubleknotExport.20101103.xls | DoubleknotExport.20101202.xls | DoubleknotExport.counselor.only.20110107.xls |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1 Last_Name                 | National        | 3 Last Name                    | 4 Last Name                           | 6 Last Name                            | Name (last part)                  | 2 Last Name                   | 1 Last Name                   | 1 Last Name
+2 First_Name                | National        | 2 First Name                   | 3 First Name                          | 5 First Name                           | Name (first part and middle part) | 3 First Name                  | 2 First Name                  | 2 First Name
+3 Address1                  | National        | 4 Address 1                    | 5 Address 1                           | 7 Address 1                            | Address (line 1)                  | 7 Address                     | 4 Street                      | 3 Street
+4 Address2                  | National        |                                |                                       |                                        | Address (line 2 or empty)         |                               |                               |
+5 City                      | National        | 5 City                         | 6 City                                | 8 City                                 | Address (line 2 or line 3)        | 8 City                        | 5 City                        | 4 City
+6 State                     | National        | 6 State                        | 7 State                               | 9 State                                | Address (line 2 or line 3)        | 9 State                       | 6 State                       | 5 State
+7 Postal_Code               | National        | 7 Zip Code                     | 8 ZIP Code                            | 10 ZIP Code                            | Address (line 2 or line 3)        | 10 Postal Code                | 7 Zip Code                    | 6 Zip Code
+8 Country                   | Double Knot     |                                |                                       |                                        |                                   |                               |                               |
+9 Phone1                    | National        | 13 Phone No                    | 9 Phone No                            | 11 Phone No                            | Phone (line 1)                    |                               | 9 Home Phone                  | 8 Home Phone
+10 Phone2                   | National        |                                | 10 W Phone No                         | 12 W Phone No                          | Phone (line 2)                    |                               | 8 Work Phone                  | 7 Work Phone
+11 Fax                      | Double Knot     |                                |                                       |                                        |                                   |                               |                               |
+12 Email                    | National        | 15 Registrant Home E-Mail      |                                       |                                        |                                   | 11 Email                      | 10 Email                      | 9 Email
+13 Email2                   | National        | 16 Registrant Bus E-Mail       |                                       |                                        |                                   | 12 Email 2                    | 11 Email 2                    | 10 Email 2
+14 Unit                     | National        | 9 Other Reg District Name      |                                       |                                        |                                   |                               | 15 Group                      | 14 Group
+15 Note                     | Double Knot     |                                |                                       |                                        |                                   |                               | 19 Note                       | 18 Note
+16 Registration_Number      | National        | 1 Person ID                    | 73 Person ID                          | 15 Person ID                           |                                   |                               | 16 Registratin No.            | 15 Registratin No.
+17 Date_Trained             | National        | 11 Other Reg Effective Date ?  | 71 Effective Date ?                   | 13 Effective Date ?                    |                                   |                               | 12 Date Trained               | 11 Date Trained
+18 Date_Training_Expires    | National        | 12 Other Reg Expire Date ?     | 72 Expire Date ?                      | 14 Expire Date ?                       |                                   |                               | 14 Expiration Date            | 13 Expiration Date
+19 Active                   | Double Knot     |                                |                                       |                                        |                                   |                               | 17 Active                     | 16 Active
+20 Badges_Taught_Starts_Here| Double Knot     |                                |                                       |                                        |                                   |                               | 3 Badge                       |
+
+PUT THE DATES FROM NATIONAL IN THE Note FIELD OF DOUBLE KNOT AND USE THE
+DATE FIELDS FROM DOUBLE KNOT TO INDICATE OTHER TRAINING DATES - I AM NOT
+SURE WHAT THOSE TRAINING DATES WOULD BE FOR
+
+Double Knot canonical data import fields
+-----------------------------------------------
+Double Knot Import Field    | Data Owner      |
+from web site               |                 |
+-----------------------------------------------
+1 Last_Name                 | National        |
+2 First_Name                | National        |
+3 Address1                  | National        |
+4 Address2                  | National        |
+5 City                      | National        |
+6 State                     | National        |
+7 Postal_Code               | National        |
+8 Country                   | Double Knot (always US) |
+9 Phone1                    | National        |
+10 Phone2                   | National        |
+11 Fax                      | Double Knot (always empty) |
+12 Email                    | National        |
+13 Email2                   | National        |
+14 Unit                     | National        |
+15 Note                     | Double Knot (includes the Effective Date and Expire Date from
+National plus the previous Double Knot note, add check for this, will look like
+[Registration Date: 01/01/2010] [Expire Date: 01/01/2011] in MM/dd/yyyy format) |
+16 Registration_Number      | National        |
+17 Date_Trained             | Double Knot (leave empty)    |
+18 Date_Training_Expires    | Double Knot (leave empty)    |
+19 Active                   | Double Knot (always yes)    |
+20 Badges_Taught_Starts_Here| Double Knot     |
+
+
+
+SAMPLE HEADER FIRST LINE (make sure to check the box to ignore this first
+line if you include this line in the import file) AND SAMPLE DATA SECOND LINE
+---------------------------------------------------------------------------------------
+Last_Name	First_Name	Address1	Address2	City	State	Postal_Code	Country	Phone1	Phone2	Fax	Email	Email2	Unit	Note	Registration_Number	Date_Trained	Date_Training_Expires	Active	Badges_Taught_Starts_Here	the line below must end with a tab
+Test0002	NormanJarvis	230 North 2300 West		Provo	Utah	84601	US	(801) 377-1663	(801) 615-9697		norman.jarvis@gmail.com		Provo West		4412297			no	15	17	22	24	100	
+
+
+Double Knot web based form data fields
+----------------------------------------
+Last Name
+First Name
+Street (aka Address) (Address 1 and Address 2 go here)
+City
+State
+Zip Code
+Work Phone
+Home Phone
+Date Trained (Date_Trained)
+Registration No.
+Date Updated
+Expiration Date (Date_Training_Expires)
+Group (aka Unit Name)
+Email
+Email 2
+Note
+Active (Yes / No flag indicating if an active counselor)
+Show Address (Yes / No flag indicating if the counselors address can be shown)
+
+Merit Badges (comma separated list of merit badges)
+
+Double Knot canonical reporting format
+---------------------------------------------
+Same as Double Knot canonical data fields
+except that the Merit Badges field is no
+longer plural it is singular Merit Badge
+and the counselors detailed information
+shows in the report multiple times
+
+Analysis of Double Knot data import fields
+--------------------------------------------------
+Last_Name
+First_Name
+Address1
+Address2
+City
+State
+Postal_Code
+Country
+Phone1
+Phone2
+Fax
+Email
+Email2
+Unit
+Note
+Registration_Number
+Date_Trained
+Date_Training_Expires
+Active
+Badges_Taught_Starts_Here
+
+#<select NAME="X3" SIZE="1">
+<option Value="">skip field</option>
+<option  Value="Last_Name">Last_Name</option>
+<option  Value="First_Name">First_Name</option>
+<option  Value="Address1">Address1</option>
+<option  Value="Address2">Address2</option>
+<option  Value="City">City</option>
+<option  Value="State">State</option>
+<option  Value="Postal_Code">Postal_Code</option>
+<option  Value="Country">Country</option>
+<option  Value="Phone1">Phone1</option>
+<option  Value="Phone2">Phone2</option>
+<option  Value="Fax">Fax</option>
+<option  Value="Email">Email</option>
+<option  Value="Email2">Email2</option>
+<option  Value="Unit">Unit</option>
+<option  Value="Note">Note</option>
+<option  Value="Registration_Number">Registration_Number</option>
+<option  Value="Date_Trained">Date_Trained</option>
+<option  Value="Date_Training_Expires">Date_Training_Expires</option>
+<option  Value="Active">Active</option>
+<option  Value="Badges_Taught_Starts_Here">Badges_Taught_Starts_Here</option>
+</select>
+
+
+
+
+
+National data fields
+----------------------------------------------
+FortUtah-MCR-09032010-ListbyName.xlsx: This data is sorted by counselor
+with a separate column for each merit badge the counselor is registered
+for. There is also an additional "Troop Only" flag for each merit badge.
+Council Name	District Name	First Name	Last Name	Address 1	City	State	ZIP Code	Phone No	W Phone No	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Badge	Troop Only	Effective Date	Expire Date	Person ID
+
+FortUtah-MCR-09032010-ListAll.txt:  This data is sorted by merit badge
+with the counselors information showing up multiple times in the report.
+The information for the counselor could be on either 2 or 3 lines.
+Troop Only       Name                                            Address                               Phone
+Merit Badge
+
+FortUtah-MCR-09032010-BSA.xlsx: The fields are self explanatory and this report
+has no merit badge information in it for the counselor.
+Person ID  	First Name	Last Name	Address 1 	City	State	Zip Code	County	Other Reg  District Name	Other Reg  Position	Other Reg  Effective Date	Other Reg  Expire Date	Phone No 	Youth Protection 	Registrant Home E-Mail	Registrant Bus E-Mail
+
+FortUtah-MCR-09032010-ListbyBadge.xlsx: This report sorts by merit badge with the
+corresponding counselor information duplicated per merit badge.
+Council Name	District Name	Badge	Troop Only	First Name	Last Name	Address 1	City	State	ZIP Code	Phone No	W Phone No	Effective Date	Expire Date	Person ID
+
+
+2) Write parsers and updaters to decide how to update the currently
+   existing data stored in the canonical format using the exported files
+   dumped out by the external systems. There will be one parser/updater
+   per exported file from the external systems. If an external system
+   provides more than one export file then there will be multiple
+   parsers/updaters for that external system.
+3) The rules in the parsers and updaters need to follow the boundary
+   lines of National owning the person data and Double Knot owning
+   the merit badge data.
+
+
+Need to combine the National files together to get a wholistic view of the data from National.
+Combine these files into a common file just to get a comprehensive view of leader data from National
+and as a sanity check (the merit badge data in these National files is very old, don't use it, only
+use the leader data, meaning only use names and address information for people but not merit badge
+information):
+** FortUtah-MCR-09032010-BSA.xlsx
+** FortUtah-MCR-09032010-ListbyName.xlsx
+** FortUtah-MCR-09032010-ListbyBadge.xlsx
+** FortUtah-MCR-09032010-ListAll.txt
+
+Also, need to merge the Double Knot exports into the national data but somehow only the merit badge data.
+** DoubleknotExport.20101103.xls
+Badge	Last Name	First Name	Unit	Work Phone	Home Phone	Address	City	State	Postal Code	Email	Email2
+** DoubleknotExport.20101202.xls
+Last Name	First Name	Badge	Street	City	State	Zip Code	Work Phone	Home Phone	Email	Email 2	Date Trained	Date Updated	Expiration Date	Group	Registratin No.	Active	Show Address	Note
+** DoubleknotExport.counselor.only.20110107.xls
+Last Name	First Name	Street	City	State	Zip Code	Work Phone	Home Phone	Email	Email 2	Date Trained	Date Updated	Expiration Date	Group	Registratin No.	Active	Show Address	Note
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Java code design
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Need to have a representation of a Counselor (with canonicalization rules for member variables) 
+2) Need to have a representation of a Merit Badge (with canonicalization rules for name and number, maybe the merit badge is just
+a comma separated list of numbers but you have to be able to go from name to number, this could be done by
+using a static HashMap mapping of name to number, all of the data exports have the name of the merit badge and
+not the number but the upload onto Double Knot takes a number or name and I would like to use the number
+because it leaves less room for error during the upload) -- so for this we will have a MeritBadge java class
+which has the code for canonicalizing the name and then mapping the name to the number, it will contain a
+static HashMap that maps the canonicalized name to the number.
+3) Need to parse the each file of data from National
