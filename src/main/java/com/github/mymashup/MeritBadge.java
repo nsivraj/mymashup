@@ -12,30 +12,7 @@ public class MeritBadge
 	public static final HashMap<Integer, MeritBadge> int2MB = new HashMap<Integer, MeritBadge>();
 	static
 	{
-		Properties mbProps = new Properties();
-
-		try
-		{
-			// load properties file
-			URL url = ClassLoader.getSystemResource(MB_PROPS_NAME);
-			if(url == null)
-			{
-				url = MeritBadge.class.getProtectionDomain().getCodeSource().getLocation();
-				String path = url.toString().substring(5);
-				java.io.FileInputStream fis = new java.io.FileInputStream
-				   (new java.io.File( path + "/" + MB_PROPS_NAME));
-				mbProps.load(fis);
-				fis.close();
-			}
-			else
-			{
-				mbProps.load(url.openStream());
-			}
-		}
-		catch(Throwable th)
-		{
-			th.printStackTrace();
-		}
+		Properties mbProps = Utils.loadProps(MB_PROPS_NAME);
 		
 		// now initialize the canonicalName2MB and int2MB HashMaps
 		int maxRefNum = Integer.parseInt(mbProps.getProperty("meritBadges.maxRefNum"));
@@ -58,6 +35,7 @@ public class MeritBadge
 			}
 		}
 	}
+	
 	
 	private String canonicalName;
 	private String displayName;
@@ -89,6 +67,7 @@ public class MeritBadge
 	{
 		return canonicalName + " :: " + displayName + " :: " + number;
 	}
+	
 	public static final MeritBadge findByCanonicalName(String canonicalName)
 	{
 		return canonicalName2MB.get(canonicalName);

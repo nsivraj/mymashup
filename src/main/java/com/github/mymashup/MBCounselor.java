@@ -1,5 +1,14 @@
 package com.github.mymashup;
 
-public class MBCounselor {
+import java.util.Collection;
 
+public class MBCounselor 
+{
+	private static final Collection fields;
+	static
+	{
+		fields = ImportField.name2Field.values();
+	}
+	
+	
 }

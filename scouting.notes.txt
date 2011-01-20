@@ -27,10 +27,10 @@ from web site               |                 | FortUtah-MCR-09032010-BSA.xlsx |
 12 Email                    | National        | 15 Registrant Home E-Mail      |                                       |                                        |                                   | 11 Email                      | 10 Email                      | 9 Email
 13 Email2                   | National        | 16 Registrant Bus E-Mail       |                                       |                                        |                                   | 12 Email 2                    | 11 Email 2                    | 10 Email 2
 14 Unit                     | National        | 9 Other Reg District Name      |                                       |                                        |                                   |                               | 15 Group                      | 14 Group
-15 Note                     | Double Knot     |                                |                                       |                                        |                                   |                               | 19 Note                       | 18 Note
+15 Note                     | Double Knot     | [11 Other Reg Effective Date] [12 Other Reg Expire Date]| [71 Effective Date] [72 Expire Date]  | [13 Effective Date] [14 Expire Date]   |                                   |                               | 19 Note                       | 18 Note
 16 Registration_Number      | National        | 1 Person ID                    | 73 Person ID                          | 15 Person ID                           |                                   |                               | 16 Registratin No.            | 15 Registratin No.
-17 Date_Trained             | National        | 11 Other Reg Effective Date ?  | 71 Effective Date ?                   | 13 Effective Date ?                    |                                   |                               | 12 Date Trained               | 11 Date Trained
-18 Date_Training_Expires    | National        | 12 Other Reg Expire Date ?     | 72 Expire Date ?                      | 14 Expire Date ?                       |                                   |                               | 14 Expiration Date            | 13 Expiration Date
+17 Date_Trained             | National        |                                |                                       |                                        |                                   |                               | 12 Date Trained               | 11 Date Trained
+18 Date_Training_Expires    | National        |                                |                                       |                                        |                                   |                               | 14 Expiration Date            | 13 Expiration Date
 19 Active                   | Double Knot     |                                |                                       |                                        |                                   |                               | 17 Active                     | 16 Active
 20 Badges_Taught_Starts_Here| Double Knot     |                                |                                       |                                        |                                   |                               | 3 Badge                       |
 
@@ -129,7 +129,8 @@ Date_Training_Expires
 Active
 Badges_Taught_Starts_Here
 
-#<select NAME="X3" SIZE="1">
+<select NAME="X1" SIZE="1"><option Value="">skip field</option><option Selected Value="Last_Name">Last_Name</option><option  Value="First_Name">First_Name</option><option  Value="Address1">Address1</option><option  Value="Address2">Address2</option><option  Value="City">City</option><option  Value="State">State</option><option  Value="Postal_Code">Postal_Code</option><option  Value="Country">Country</option><option  Value="Phone1">Phone1</option><option  Value="Phone2">Phone2</option><option  Value="Fax">Fax</option><option  Value="Email">Email</option><option  Value="Email2">Email2</option><option  Value="Unit">Unit</option><option  Value="Note">Note</option><option  Value="Registration_Number">Registration_Number</option><option  Value="Date_Trained">Date_Trained</option><option  Value="Date_Training_Expires">Date_Training_Expires</option><option  Value="Active">Active</option><option  Value="Badges_Taught_Starts_Here">Badges_Taught_Starts_Here</option></select>
+<select NAME="X3" SIZE="1">
 <option Value="">skip field</option>
 <option  Value="Last_Name">Last_Name</option>
 <option  Value="First_Name">First_Name</option>
