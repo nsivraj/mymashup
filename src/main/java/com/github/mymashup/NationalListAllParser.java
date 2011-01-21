@@ -2,7 +2,7 @@ package com.github.mymashup;
 
 public class NationalListAllParser extends BaseMBParser
 {
-	public void merge()
+	public void merge(CanonicalData canonicalData)
 	{
 
 	}

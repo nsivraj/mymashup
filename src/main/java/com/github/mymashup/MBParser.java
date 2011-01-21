@@ -6,6 +6,6 @@ interface MBParser {
 
 	void init(File toParse, String[] fields, String[] mapping, String dataOrigin);
 
-	void merge();
+	void merge(CanonicalData canonicalData);
 
 }

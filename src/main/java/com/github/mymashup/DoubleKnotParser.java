@@ -2,7 +2,7 @@ package com.github.mymashup;
 
 public class DoubleKnotParser extends BaseMBParser
 {
-	public void merge()
+	public void merge(CanonicalData canonicalData)
 	{
 		// open up the toParse file and begin to read from that file
 		

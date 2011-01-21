@@ -6,7 +6,7 @@ import java.util.Properties;
 public class ImportField
 {
 	public static final String FIELD_PROPS_NAME = "double.knot.canonnical.import.fields.properties";
-	public static final HashMap<String, ImportField> name2Field = new HashMap<String, ImportField>();
+	private static final HashMap<String, ImportField> name2Field = new HashMap<String, ImportField>();
 	static
 	{
 		Properties fieldProps = Utils.loadProps(FIELD_PROPS_NAME);
@@ -14,6 +14,7 @@ public class ImportField
 		// now initialize the canonicalName2MB and int2MB HashMaps
 		int maxRefNum = Integer.parseInt(fieldProps.getProperty("importFields.maxRefNum"));
 		String name, owner, type, defaultValue;
+		int index;
 		
 		for(int i = 0; i < maxRefNum; ++i)
 		{
@@ -21,9 +22,10 @@ public class ImportField
 			owner = fieldProps.getProperty(i + ".owner");
 			type = fieldProps.getProperty(i + ".type");
 			defaultValue = fieldProps.getProperty(i + ".defaultValue");
+			index = Integer.parseInt(fieldProps.getProperty(i + ".index"));
 			if(name != null && owner != null && type != null)
 			{
-				ImportField field = new ImportField(name, owner, type, defaultValue);
+				ImportField field = new ImportField(name, owner, type, defaultValue, index);
 				name2Field.put(field.getName(), field);
 			}
 			else
@@ -37,13 +39,15 @@ public class ImportField
 	protected String owner;
 	protected String type;
 	protected String defaultValue;
+	protected int index;
 	
-	protected ImportField(String name, String owner, String type, String defaultValue)
+	protected ImportField(String name, String owner, String type, String defaultValue, int index)
 	{
 		this.name = name;
 		this.owner = owner;
 		this.type = type;
 		this.defaultValue = defaultValue;
+		this.index = index;
 	}
 
 	public String getName() {
@@ -62,9 +66,14 @@ public class ImportField
 		return defaultValue;
 	}
 	
+	public int getIndex()
+	{
+		return index;
+	}
+	
 	public String toString()
 	{
-		return name + " :: " + owner + " :: " + type + " :: " + defaultValue;
+		return name + " :: " + owner + " :: " + type + " :: " + defaultValue + " :: " + index;
 	}
 	
 	public static final void main(String[] args)
@@ -73,8 +82,11 @@ public class ImportField
 		System.out.println(mb);
 	}
 
-	private static ImportField findByName(String name) {
+	public static ImportField findByName(String name) {
 		return name2Field.get(name);
 	}
 	
+	public static int getFieldCount() {
+		return name2Field.size();
+	}
 }

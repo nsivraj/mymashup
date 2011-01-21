@@ -6,10 +6,19 @@ import java.util.Properties;
 public class MergeMBCounselors
 {
 	public static final String MAPPING_PROPS_NAME = "data.field.mapping.properties";
-	public static final Properties mappingProps;
+	private static final Properties mappingProps;
+	private static final CanonicalData canonicalData;
 	static
 	{
 		mappingProps = Utils.loadProps(MAPPING_PROPS_NAME);
+		
+		canonicalData = new CanonicalParser();
+		File toParse = new File(mappingProps.getProperty("canonical.fullFilePath"));
+		String[] fields = mappingProps.getProperty("canonical.fields").split(",");
+		String[] mapping = mappingProps.getProperty("canonical.mapping").split(",");
+		String dataOrigin = mappingProps.getProperty("canonical.dataOrigin");
+		((CanonicalParser)canonicalData).init(toParse, fields, mapping, dataOrigin);
+		((CanonicalParser)canonicalData).merge(canonicalData);
 	}
 	
 	public void merge(String mappingKey) throws InstantiationException, IllegalAccessException, ClassNotFoundException
@@ -21,7 +30,7 @@ public class MergeMBCounselors
 		String dataOrigin = mappingProps.getProperty(mappingKey + ".dataOrigin");
 		MBParser parser = (MBParser)Class.forName(mappingProps.getProperty(mappingKey + ".parser")).newInstance();
 		parser.init(toParse, fields, mapping, dataOrigin);
-		parser.merge();
+		parser.merge(canonicalData);
 	}
 	
 	public static final void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException
