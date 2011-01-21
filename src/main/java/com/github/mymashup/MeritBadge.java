@@ -1,7 +1,6 @@
 package com.github.mymashup;
 
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
 

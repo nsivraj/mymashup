@@ -1,22 +1,12 @@
 package com.github.mymashup;
 
-import java.util.Collection;
-
 public class MBCounselor 
 {
 	protected String[] values;
 	
-	public MBCounselor(String[] values, boolean canonicalized)
+	public MBCounselor(String[] values)
 	{
-		if(canonicalized)
-		{
-			this.values = values;
-		}
-		else
-		{
-			// canonicalize the values and then assign them to the values array
-			this.values = values;
-		}
+		this.values = values;
 	}
 	
 	public String[] getValues()
