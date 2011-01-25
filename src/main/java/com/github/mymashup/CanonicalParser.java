@@ -38,13 +38,20 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 	}
 
 	// personId, lastName, firstName, address1, address2, phone1, phone2, fax, email, email2
-	public MBCounselor findCounselor(String[] mbData, String[] mapping)
+	public MBCounselor findCounselor(String[] canonicalData)
 	{
+		// first attempt an exact match on Registration_Number
+		// next attempt an exact match on Last_Name and one of (address1, address2, phone1, phone2, fax, email, email2)
+		//    if First_Name does not match then error out and find out what needs to be done in that special case
+		
 		return null;
 	}
 	
 	public void addCounselor(MBCounselor counselor)
 	{
+		counselors.add(counselor);
 		
+		// also need to update the different keyed lookup Maps or Sorted collections
 	}
 }
+

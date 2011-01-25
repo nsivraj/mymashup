@@ -12,7 +12,7 @@ public class DoubleKnotCanonicalizer implements Canonicalizer
 		return mbData;
 	}
 	
-	public String getCanonicalData(String mapping, String data)
+	public String getCanonicalData(String data, ImportField field)
 	{
 		return null;
 	}

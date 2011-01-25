@@ -7,6 +7,7 @@ public class ImportField
 {
 	public static final String FIELD_PROPS_NAME = "double.knot.canonnical.import.fields.properties";
 	private static final HashMap<String, ImportField> name2Field = new HashMap<String, ImportField>();
+	private static final HashMap<Integer, ImportField> int2Field = new HashMap<Integer, ImportField>();
 	static
 	{
 		Properties fieldProps = Utils.loadProps(FIELD_PROPS_NAME);
@@ -16,17 +17,18 @@ public class ImportField
 		String name, owner, type, defaultValue;
 		int index;
 		
-		for(int i = 0; i < maxRefNum; ++i)
+		for(int i = 1; i <= maxRefNum; ++i)
 		{
 			name = fieldProps.getProperty(i + ".name");
 			owner = fieldProps.getProperty(i + ".owner");
 			type = fieldProps.getProperty(i + ".type");
 			defaultValue = fieldProps.getProperty(i + ".defaultValue");
-			index = Integer.parseInt(fieldProps.getProperty(i + ".index"));
+			index = Integer.parseInt(fieldProps.getProperty(i + ".index")) - 1;
 			if(name != null && owner != null && type != null)
 			{
 				ImportField field = new ImportField(name, owner, type, defaultValue, index);
 				name2Field.put(field.getName(), field);
+				int2Field.put(field.getIndex(), field);
 			}
 			else
 			{
@@ -88,5 +90,10 @@ public class ImportField
 	
 	public static int getFieldCount() {
 		return name2Field.size();
+	}
+
+	public static ImportField findByIndex(int index)
+	{
+		return int2Field.get(index);
 	}
 }

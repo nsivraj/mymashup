@@ -22,7 +22,7 @@ public class NationalParser extends BaseMBParser
 			{
 				String[] mbData = nextLine.replace("\"", "").split("\t");
 				mbData = canonicalizer.getCanonicalData(mbData, mapping);
-				MBCounselor counselor = canonicalData.findCounselor(mbData, mapping);
+				MBCounselor counselor = canonicalData.findCounselor(mbData);
 				if(counselor == null)
 				{
 					counselor = new MBCounselor(mbData);

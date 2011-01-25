@@ -17,7 +17,7 @@ public class MeritBadge
 		int maxRefNum = Integer.parseInt(mbProps.getProperty("meritBadges.maxRefNum"));
 		String canonicalName, displayName, number;
 		
-		for(int i = 0; i < maxRefNum; ++i)
+		for(int i = 1; i <= maxRefNum; ++i)
 		{
 			canonicalName = mbProps.getProperty(i + ".canonicalName");
 			displayName = mbProps.getProperty(i + ".displayName");
