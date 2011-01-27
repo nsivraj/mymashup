@@ -31,6 +31,14 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		unitOptions.put("PROVO WEST STAKE", "Provo West Stake");
 		unitOptions.put("PROVO GRANDVIEW SOUTH STAKE", "Provo Grandview South Stake");
 		unitOptions.put("PROVO PARKWAY STAKE", "Provo Parkway Stake");
+		unitOptions.put("PROVO SOUTH STAKE", "Provo South Stake");
+		unitOptions.put("PROVO SUNSET STAKE", "Provo Sunset Stake");
+		unitOptions.put("GRANDVIEW STAKE", "Grandview Stake");
+		unitOptions.put("GRANDVIEW EAST", "Grandview East");
+		unitOptions.put("PROVO CENTRAL STK.", "Provo Central Stk.");
+		unitOptions.put("FORT UTAH/ ARTURO", "Fort Utah/ Arturo");
+		unitOptions.put("PROVO NORTH PARK", "Provo North Park");
+		unitOptions.put("COMMUNITY UNITS", "Community Units");
 		
 		activeOptions.put("YES", "yes");
 	}
