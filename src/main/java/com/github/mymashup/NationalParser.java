@@ -1,13 +1,17 @@
 package com.github.mymashup;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+
 public class NationalParser extends BaseMBParser
 {
-	public String[] parseFirstRow(String firstRow)
+	public String[] parseFirstRow(BufferedReader reader) throws IOException
 	{
-		return parseNextLine(firstRow);
+		String firstRowFromFile = reader.readLine();
+		return parseNextLine(reader, firstRowFromFile);
 	}
 	
-	public String[] parseNextLine(String nextLine)
+	public String[] parseNextLine(BufferedReader reader, String nextLine) throws IOException
 	{
 		return nextLine.replace("\"", "").split("\t");
 	}

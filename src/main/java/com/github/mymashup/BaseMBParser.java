@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class BaseMBParser implements MBParser
 {
@@ -13,6 +15,7 @@ public abstract class BaseMBParser implements MBParser
 	protected String dataOrigin;
 	protected Canonicalizer canonicalizer;
 	protected String[] firstRow;
+	protected Map<String, Integer> fieldName2Index;
 	
 	public void init(File toParse, String[] fields, String[] mapping, String dataOrigin, Canonicalizer canonicalizer)
 	{
@@ -21,6 +24,13 @@ public abstract class BaseMBParser implements MBParser
 		this.mapping = mapping;
 		this.dataOrigin = dataOrigin;
 		this.canonicalizer = canonicalizer;
+		this.fieldName2Index = new HashMap<String, Integer>();
+		
+		for(int i = 0; i < fields.length; ++i)
+		{
+			this.fieldName2Index.put(fields[i], i);
+		}
+		
 	}
 
 	public String getDataOrigin()
@@ -78,31 +88,55 @@ public abstract class BaseMBParser implements MBParser
 	
 	public void merge(CanonicalData canonicalData, boolean hasFirstRow) throws IOException
 	{
-		BufferedReader reader = new BufferedReader(new FileReader(toParse));
-		
-		if(hasFirstRow)
+		if(toParse.exists())
 		{
-			firstRow = parseFirstRow(reader.readLine());
-		}
-
-		String nextLine = null;
-		while((nextLine = reader.readLine()) != null)
-		{
-			String[] mbData = parseNextLine(nextLine);
-			mbData = canonicalizer.getCanonicalData(mbData, mapping);
-			MBCounselor counselor = canonicalData.findCounselor(mbData, this);
-			if(counselor == null)
+			BufferedReader reader = new BufferedReader(new FileReader(toParse));
+			
+			if(hasFirstRow)
 			{
-				counselor = new MBCounselor(mbData);
-				canonicalData.addCounselor(counselor);
+				firstRow = parseFirstRow(reader);
 			}
-			else
+	
+			String nextLine = null;
+			while((nextLine = reader.readLine()) != null)
 			{
-				counselor.mergeData(mbData, getDataOrigin());
+				String[] mbData = parseNextLine(reader, nextLine);
+				if(mbData != null)
+				{
+					mbData = canonicalizer.getCanonicalData(dataOrigin, mbData, mapping);
+					MBCounselor counselor = canonicalData.findCounselor(mbData, this);
+					if(counselor == null)
+					{
+						counselor = new MBCounselor(mbData);
+						canonicalData.addCounselor(counselor);
+					}
+					else
+					{
+						counselor.mergeData(mbData, getDataOrigin());
+					}
+				}
 			}
+			
+			reader.close();
 		}
-		
-		reader.close();
 	}
 
+	
+	public String parseTelephone(String phone)
+	{
+		String retVal = "";
+
+		for(int i = 0; i < phone.length(); ++i)
+		{
+			if(Character.isDigit(phone.charAt(i)))
+			{
+				retVal += phone.charAt(i);
+			}
+		}
+		
+		return retVal;
+	}
+	
+
+	
 }

@@ -1,19 +1,6 @@
 package com.github.mymashup;
 
-public class DoubleKnotCanonicalizer implements Canonicalizer
+public class DoubleKnotCanonicalizer extends AbstractCanonicalizer
 {
-	public String[] getCanonicalData(String[] mbData, String[] mapping)
-	{
-		for(int i = 0; i < mbData.length; ++i)
-		{
-			//mapping[i];
-		}
-		
-		return mbData;
-	}
-	
-	public String getCanonicalData(String data, ImportField field)
-	{
-		return data;
-	}
+
 }

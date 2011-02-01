@@ -1,8 +1,6 @@
 package com.github.mymashup;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -13,6 +11,8 @@ public class MergeMBCounselors
 	static
 	{
 		mappingProps = Utils.loadProps(MAPPING_PROPS_NAME);
+		MBCounselor.reportValuesChanged = Boolean.valueOf(mappingProps.getProperty("reportValuesChanged"));
+		MBCounselor.reportNotMergingBecauseOfOwnership = Boolean.valueOf(mappingProps.getProperty("reportNotMergingBecauseOfOwnership"));
 		//canonicalData = new CanonicalParser();
 
 		//try
@@ -43,7 +43,12 @@ public class MergeMBCounselors
 		// find the mappingKey.fullFilePath property
 		File toParse = new File(mappingProps.getProperty(mappingKey + ".fullFilePath"));
 		String[] fields = mappingProps.getProperty(mappingKey + ".fields").split(",");
-		String[] mapping = mappingProps.getProperty(mappingKey + ".mapping").split(",");
+		
+		String mappingStr = mappingProps.getProperty(mappingKey + ".mapping");
+		String[] mapping;
+		if(mappingStr == null) mapping = fields;
+		else mapping = mappingStr.split(",");
+		
 		String dataOrigin = mappingProps.getProperty(mappingKey + ".dataOrigin");
 		boolean hasFirstRow = Boolean.valueOf(mappingProps.getProperty(mappingKey + ".hasFirstRow"));
 		Canonicalizer canonicalizer = (Canonicalizer)Class.forName(mappingProps.getProperty(mappingKey + ".canonicalizer")).newInstance();
@@ -79,6 +84,7 @@ public class MergeMBCounselors
 	public static final void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
 	{
 		MergeMBCounselors merge = new MergeMBCounselors();
-		merge.processData(args[0]);
+		if(args.length > 0) merge.processData(args[0]);
+		else merge.processData("all");
 	}
 }

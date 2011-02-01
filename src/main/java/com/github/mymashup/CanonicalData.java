@@ -1,6 +1,6 @@
 package com.github.mymashup;
 
-import java.io.File;
+import java.io.IOException;
 
 public interface CanonicalData
 {
@@ -8,5 +8,5 @@ public interface CanonicalData
 
 	public void addCounselor(MBCounselor counselor);
 	
-	public void persistData();
+	public void persistData() throws IOException;
 }
