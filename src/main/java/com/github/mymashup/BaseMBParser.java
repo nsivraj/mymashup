@@ -104,11 +104,16 @@ public abstract class BaseMBParser implements MBParser
 				if(mbData != null)
 				{
 					mbData = canonicalizer.getCanonicalData(dataOrigin, mbData, mapping);
+					if("GRIFFIN".equalsIgnoreCase(mbData[0]))
+					{
+						System.out.println("Found GRIFFIN");
+					}
+					
 					MBCounselor counselor = canonicalData.findCounselor(mbData, this);
 					if(counselor == null)
 					{
 						counselor = new MBCounselor(mbData);
-						canonicalData.addCounselor(counselor);
+						canonicalData.addCounselor(counselor, this);
 					}
 					else
 					{
@@ -122,21 +127,5 @@ public abstract class BaseMBParser implements MBParser
 	}
 
 	
-	public String parseTelephone(String phone)
-	{
-		String retVal = "";
-
-		for(int i = 0; i < phone.length(); ++i)
-		{
-			if(Character.isDigit(phone.charAt(i)))
-			{
-				retVal += phone.charAt(i);
-			}
-		}
-		
-		return retVal;
-	}
-	
-
 	
 }

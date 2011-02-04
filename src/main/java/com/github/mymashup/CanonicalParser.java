@@ -13,6 +13,7 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 {
 	protected List<MBCounselor> counselors;
 	protected Map<String, MBCounselor> regNumberMap = new HashMap<String, MBCounselor>();
+	protected Map<String, List<MBCounselor>> lastNameMap = new HashMap<String, List<MBCounselor>>();
 	
 	public CanonicalParser()
 	{
@@ -75,13 +76,59 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 			if(counselor == null)
 			{
 				// find based on the last name and some other piece of data
+				String lastName = MBCounselor.getLastName(canonicalData);
+				if(lastName != null)
+				{
+					lastName = lastName.toLowerCase();
+					if("GRIFFIN".equalsIgnoreCase(lastName))
+					{
+						System.out.println("Found GRIFFIN");
+					}
+					List<MBCounselor> sameLastName = lastNameMap.get(lastName);
+					if(sameLastName != null)
+					{
+						for(MBCounselor tmpCounselor : sameLastName)
+						{
+							if(tmpCounselor.matchesOtherAttributes(canonicalData, parser.getDataOrigin()))
+							{
+								counselor = tmpCounselor;
+							}
+						}
+					}
+				}
+				
+				if(counselor == null)
+				{
+					String firstName = MBCounselor.getFirstName(canonicalData);
+					if(firstName != null)
+					{
+						firstName = firstName.toLowerCase();
+						List<MBCounselor> sameFirstName = lastNameMap.get(firstName);
+						if(sameFirstName != null)
+						{
+							for(MBCounselor tmpCounselor : sameFirstName)
+							{
+								if(tmpCounselor.matchesOtherAttributes(canonicalData, parser.getDataOrigin()))
+								{
+									counselor = tmpCounselor;
+									System.out.println("Found some import data whose last name '" + lastName + "' is really the first name and whose first name '" + firstName + "' is really the last name.");
+									MBCounselor.swapFirstNameAndLastName(canonicalData);
+								}
+							}
+						}
+					}
+				}
 			}
+			
+			// is there another comparison that should be done???, probably not
+			
 		}
 
 		return counselor;
 	}
+
 	
-	public void addCounselor(MBCounselor counselor)
+	public void addCounselor(MBCounselor counselor, MBParser parser)
 	{
 		counselors.add(counselor);
 		
@@ -95,6 +142,45 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 			}
 			
 			regNumberMap.put(regNumberKey, counselor);
+		}
+		
+		// need to do checks on both because sometimes the first and last names are getting swapped, maybe NOT ???
+		addLastNameIndex(counselor.getLastName(), parser.getDataOrigin(), counselor);
+		//addLastNameIndex(counselor.getFirstName(), counselor);
+	}
+
+	public void addLastNameIndex(String lastName, String myDataOrigin, MBCounselor counselor)
+	{
+		if(lastName != null)
+		{
+			lastName = lastName.toLowerCase();
+			if("GRIFFIN".equalsIgnoreCase(lastName))
+			{
+				System.out.println("Found GRIFFIN");
+			}
+			List<MBCounselor> sameLastName = lastNameMap.get(lastName);
+			if(sameLastName == null)
+			{
+				sameLastName = new ArrayList<MBCounselor>();
+				lastNameMap.put(lastName, sameLastName);
+			}
+			
+			MBCounselor sameLastNameCounselor = null;
+			for(MBCounselor tmpCounselor : sameLastName)
+			{
+				if(tmpCounselor.matchesOtherAttributes(counselor.getValues(), myDataOrigin))
+				{
+					sameLastNameCounselor = tmpCounselor;
+				}
+			}
+			
+			// this should never happen, if it does then it means that the findCounselor method above failed, in most cases
+			if(sameLastNameCounselor != null)
+			{
+				throw new RuntimeException("The counselor with last name '" + lastName + "' is already contained in the last name mapping: " + counselor + " :: " + sameLastNameCounselor);
+			}
+			
+			sameLastName.add(counselor);
 		}
 	}
 }

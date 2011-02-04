@@ -156,7 +156,7 @@ public class NationalListAllParser extends BaseMBParser
 						foundCharCount++;
 						int endIndex = line.indexOf("   ", i);
 						if(endIndex == -1) endIndex = line.length();
-						String phoneNumber = parseTelephone(line.substring(i+1, endIndex));
+						String phoneNumber = canonicalizer.parseTelephone(line.substring(i+1, endIndex));
 						if(line.charAt(i) == 'H') mbData[getIndex(PHONE_LINE_1)] = phoneNumber;
 						else if(line.charAt(i) == 'W') mbData[getIndex(PHONE_LINE_2)] = phoneNumber;
 						else if(line.charAt(i) == 'B') mbData[getIndex(PHONE_LINE_2)] = phoneNumber;
@@ -235,7 +235,7 @@ public class NationalListAllParser extends BaseMBParser
 						// parse the phone number - H is home, W is work and B is ????
 						int endIndex = line.indexOf("   ", i);
 						if(endIndex == -1) endIndex = line.length();
-						String phoneNumber = parseTelephone(line.substring(i+1, endIndex));
+						String phoneNumber = canonicalizer.parseTelephone(line.substring(i+1, endIndex));
 						if(line.charAt(i) == 'H') mbData[getIndex(PHONE_LINE_1)] = phoneNumber;
 						else if(line.charAt(i) == 'W') mbData[getIndex(PHONE_LINE_2)] = phoneNumber;
 						else if(line.charAt(i) == 'B') mbData[getIndex(PHONE_LINE_2)] = phoneNumber;
@@ -260,7 +260,7 @@ public class NationalListAllParser extends BaseMBParser
 						// parse the phone number - H is home, W is work and B is ????
 						int endIndex = line.indexOf("   ", i);
 						if(endIndex == -1) endIndex = line.length();
-						String phoneNumber = parseTelephone(line.substring(i+1, endIndex));
+						String phoneNumber = canonicalizer.parseTelephone(line.substring(i+1, endIndex));
 						if(line.charAt(i) == 'H') mbData[getIndex(PHONE_LINE_1)] = phoneNumber;
 						else if(line.charAt(i) == 'W') mbData[getIndex(PHONE_LINE_2)] = phoneNumber;
 						else if(line.charAt(i) == 'B') mbData[getIndex(PHONE_LINE_2)] = phoneNumber;

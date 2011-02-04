@@ -35,7 +35,9 @@ public class MergeMBCounselors
 	public MergeMBCounselors() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
 	{
 		this.canonicalData = null;
+		System.out.println("--------------------------------------------------------BEGIN: canonical------------------------------------------------------------------------------");
 		this.merge("canonical");
+		System.out.println("--------------------------------------------------------END: canonical-------------------------------------------------------------------------------");
 	}
 
 	public void merge(String mappingKey) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
@@ -69,7 +71,9 @@ public class MergeMBCounselors
 			String[] mappings = mappingProps.getProperty("mappings").split(",");
 			for(String mapping : mappings)
 			{
+				System.out.println("--------------------------------------------------------BEGIN: " + mapping + "------------------------------------------------------------------------------");
 				this.merge(mapping);
+				System.out.println("--------------------------------------------------------END: " + mapping + "-------------------------------------------------------------------------------");
 			}
 		}
 		else

@@ -165,7 +165,7 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			}
 			else if(PHONE.equals(field.getType()))
 			{
-				canonicalData = canonicalData.replace("(", "").replace(")", "").replace(" ", "").replace("-", "");
+				canonicalData = parseTelephone(canonicalData); //canonicalData.replace("(", "").replace(")", "").replace(" ", "").replace("-", "");
 				if(!isAllNumbers(canonicalData))
 				{
 					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' is not all numbers: " + canonicalData + " :: " + data);
@@ -245,8 +245,11 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			displayVal = "";
 			for(int i = 0; i < parts.length; ++i)
 			{
-				displayVal += Character.toUpperCase(parts[i].charAt(0)) + parts[i].substring(1).toLowerCase();
-				displayVal += " ";
+				if(parts[i].trim().length() > 0)
+				{
+					displayVal += Character.toUpperCase(parts[i].charAt(0)) + parts[i].substring(1).toLowerCase();
+					displayVal += " ";
+				}
 			}
 		}
 		else if(US_POSTAL_CODE.equals(field.getType()))
@@ -291,6 +294,21 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		
 		return buf.toString();
 	}
+	
+	public String parseTelephone(String phone)
+	{
+		String retVal = "";
+
+		for(int i = 0; i < phone.length(); ++i)
+		{
+			if(Character.isDigit(phone.charAt(i)))
+			{
+				retVal += phone.charAt(i);
+			}
+		}
+		
+		return retVal;
+	}	
 }
 
 
