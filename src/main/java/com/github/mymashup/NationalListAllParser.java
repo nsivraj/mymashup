@@ -62,34 +62,32 @@ public class NationalListAllParser extends BaseMBParser
 			int lineCount = 0;
 			while(nextLine != null && nextLine.trim().length() > 0 && !(nextLine.trim().equals("\f")))
 			{
-				if(mbData == null)
-				{
-					mbData = new String[fields.length];
-				}
-				
 				// nextLine could be a new merit badge name
 				String meritBadge = getNextNationalMBBoundary(nextLine);
 				if(meritBadge != null)
 				{
 					mbName.set(meritBadge);
+					if(mbData != null) break;
 				}
 				else
 				{
+					if(mbData == null)
+					{
+						mbData = new String[fields.length];
+					}
+					
 					// now parse nextLine data for this counselor
 //		            N        David  V  Arnold                             1241 W 1150 S                            H (801) 764-0277^M
 //                    Provo, UT  84601-5452                    W (801) 377-5755^M
 //^M
 					parseNational(nextLine, mbData, ++lineCount);
+
+					// set the merit badge into the mbData array
+					mbData[getIndex(MERIT_BADGE)] = mbName.get();
 				}
 				
 				nextLine = reader.readLine();
 			}
-		}
-		
-		// set the merit badge into the mbData array
-		if(mbData != null)
-		{
-			mbData[getIndex(MERIT_BADGE)] = mbName.get();
 		}
 		
 		return mbData;
@@ -113,7 +111,7 @@ public class NationalListAllParser extends BaseMBParser
 		//++lineCount;
 		if(lineCount > 2)
 		{
-			System.out.println("found the culprit: " + line);
+			System.out.println("found the culprit: " + line + " :: " + MBCounselor.toString(mbData));
 		}
 		
 		// Badges_Taught_Starts_Here,,Last_Name,First_Name,Address1,Address2,City,State,Postal_Code,Phone1,Phone2
@@ -176,6 +174,11 @@ public class NationalListAllParser extends BaseMBParser
 					}
 					else if(foundCharCount == 1)
 					{
+						if(line.toLowerCase().indexOf("wagoner") != -1)
+						{
+							System.out.println("Processing Van Wagoner");
+						}
+						
 						// second char is David  V  Arnold                             1241 W 1150 S                            H (801) 764-0277 Name - parse the whole name
 						foundCharCount++;
 						int endIndex = line.indexOf(' ', i);
@@ -183,7 +186,7 @@ public class NationalListAllParser extends BaseMBParser
 						
 						if("rovo,".equalsIgnoreCase(mbData[getIndex(NAME_FIRST_PART_AND_MIDDLE_PART)]))
 						{
-							System.out.println("found the culprit: "+line);
+							System.out.println("found the culprit: " + line + " :: " + MBCounselor.toString(mbData));
 						}
 						
 						i = endIndex;
@@ -192,7 +195,7 @@ public class NationalListAllParser extends BaseMBParser
 						{
 							mbData[getIndex(NAME_FIRST_PART_AND_MIDDLE_PART)] += " " + line.substring(i,++i);
 							while(Character.isWhitespace(line.charAt(i))) ++i;
-							endIndex = line.indexOf(' ', i);
+							endIndex = line.indexOf("  ", i);
 							mbData[getIndex(NAME_LAST_PART)] = line.substring(i, endIndex);
 							i = endIndex;
 						}
@@ -290,9 +293,22 @@ public class NationalListAllParser extends BaseMBParser
 			}
 		}
 		
+		
 		if(MeritBadge.findByCanonicalName(mbKey) != null)
 		{
 			return mbKey;
+		}
+		else if("automotivemaintenance".equalsIgnoreCase(mbKey))
+		{
+			return "automechanics";
+		}
+		else if("modeldesignandbuilding".equalsIgnoreCase(mbKey))
+		{
+			return "modeldesign";
+		}
+		else if("watersports".equalsIgnoreCase(mbKey))
+		{
+			return "waterskiing";
 		}
 		else
 		{

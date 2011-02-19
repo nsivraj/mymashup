@@ -106,7 +106,7 @@ public abstract class BaseMBParser implements MBParser
 					mbData = canonicalizer.getCanonicalData(dataOrigin, mbData, mapping);
 					if("GRIFFIN".equalsIgnoreCase(mbData[0]))
 					{
-						System.out.println("Found GRIFFIN");
+						//System.out.println("Found GRIFFIN");
 					}
 					
 					MBCounselor counselor = canonicalData.findCounselor(mbData, this);
@@ -117,7 +117,20 @@ public abstract class BaseMBParser implements MBParser
 					}
 					else
 					{
-						counselor.mergeData(mbData, getDataOrigin());
+						String[] oldValues = new String[mbData.length];
+						System.arraycopy(counselor.getValues(), 0, oldValues, 0, mbData.length);
+						boolean[] hasChanged = counselor.mergeData(mbData, getDataOrigin());
+						for(int i = 0; i < hasChanged.length; ++i)
+						{
+							if(hasChanged[i] && MBCounselor.isLastName(i))
+							{
+								canonicalData.reorderLastNameMap(counselor, oldValues, i);
+							}
+							else if(hasChanged[i] && MBCounselor.isRegistrationNumber(i))
+							{
+								canonicalData.reorderRegistrationNumberMap(counselor, oldValues, i);
+							}
+						}
 					}
 				}
 			}
