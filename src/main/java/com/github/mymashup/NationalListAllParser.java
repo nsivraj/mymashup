@@ -23,6 +23,11 @@ public class NationalListAllParser extends BaseMBParser
 	public static final String PHONE_LINE_1 = "Phone_Line_1";
 	public static final String PHONE_LINE_2 = "Phone_Line_2";
 	
+	public boolean doNotMergeData(MBCounselor counselor, String[] mbData)
+	{
+		return counselor.getMostRecentDataFile().equals(toParse);
+	}
+	
 	public String[] parseFirstRow(BufferedReader reader) throws IOException
 	{
 		String firstRowFromFile = reader.readLine();
@@ -57,7 +62,9 @@ public class NationalListAllParser extends BaseMBParser
 			   nextLine.trim().startsWith("Badges:") ||
 			   nextLine.trim().startsWith("Include \"Troop Only\" Counselors:") ||
 			   nextLine.trim().startsWith("Troop Only") ||
-			   nextLine.trim().startsWith("------------------------------")))
+			   nextLine.trim().startsWith("------------------------------") ||
+			   nextLine.trim().startsWith("--- End Of Report ---") ||
+			   (nextLine.trim().contains("R!") && nextLine.trim().contains("N!"))))
 		{
 			int lineCount = 0;
 			while(nextLine != null && nextLine.trim().length() > 0 && !(nextLine.trim().equals("\f")))
@@ -111,7 +118,7 @@ public class NationalListAllParser extends BaseMBParser
 		//++lineCount;
 		if(lineCount > 2)
 		{
-			System.out.println("found the culprit: " + line + " :: " + MBCounselor.toString(mbData));
+			System.out.println("found the culprit: " + line + " :: " + MBCounselor.toString(mbData, getToParse()));
 		}
 		
 		// Badges_Taught_Starts_Here,,Last_Name,First_Name,Address1,Address2,City,State,Postal_Code,Phone1,Phone2
@@ -186,7 +193,7 @@ public class NationalListAllParser extends BaseMBParser
 						
 						if("rovo,".equalsIgnoreCase(mbData[getIndex(NAME_FIRST_PART_AND_MIDDLE_PART)]))
 						{
-							System.out.println("found the culprit: " + line + " :: " + MBCounselor.toString(mbData));
+							System.out.println("found the culprit: " + line + " :: " + MBCounselor.toString(mbData, getToParse()));
 						}
 						
 						i = endIndex;
@@ -230,6 +237,7 @@ public class NationalListAllParser extends BaseMBParser
 						foundCharCount++;
 						int beginIndex = i;
 						int endIndex = line.indexOf("   ", i);
+						if(endIndex == -1) { endIndex = line.length(); }
 						if(beginIndex >= 0 && endIndex >= 0) { mbData[getIndex(ADDRESS_LINE_1)] = line.substring(beginIndex, endIndex); }
 						i = endIndex;
 					}

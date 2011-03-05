@@ -13,6 +13,7 @@ public class MergeMBCounselors
 		mappingProps = Utils.loadProps(MAPPING_PROPS_NAME);
 		MBCounselor.reportValuesChanged = Boolean.valueOf(mappingProps.getProperty("reportValuesChanged"));
 		MBCounselor.reportNotMergingBecauseOfOwnership = Boolean.valueOf(mappingProps.getProperty("reportNotMergingBecauseOfOwnership"));
+		MBCounselor.verbose = Boolean.valueOf(mappingProps.getProperty("verbose"));
 		//canonicalData = new CanonicalParser();
 
 		//try

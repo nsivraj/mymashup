@@ -11,4 +11,6 @@ interface MBParser
 	String getDataOrigin();
 	String[] parseFirstRow(BufferedReader reader) throws IOException;
 	String[] parseNextLine(BufferedReader reader, String nextLine) throws IOException;
+	File getToParse();
+	boolean doNotMergeData(MBCounselor counselor, String[] mbData);
 }

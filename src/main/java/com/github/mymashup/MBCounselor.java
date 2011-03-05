@@ -1,10 +1,14 @@
 package com.github.mymashup;
 
+import java.io.File;
+
 public class MBCounselor 
 {
+	public static final String LASTNAME_SUFFIX_INDICATOR = "||||";
 	public static boolean reportValuesChanged = false;
 	public static boolean reportNotMergingBecauseOfOwnership = false;
-
+	public static boolean verbose = false;
+	
 	public static String getValue(String name, String[] mbData)
 	{
 		ImportField field = ImportField.findByName(name);
@@ -23,9 +27,9 @@ public class MBCounselor
 	}
 	
 	
-	public static boolean swapFirstNameAndLastName(String[] canonicalData)
+	public static boolean swapFirstNameAndLastName(String[] canonicalData, File dataFile)
 	{
-		System.out.println("Swapping first and last name for '" + MBCounselor.toString(canonicalData) + "'.");
+		System.out.println("Swapping first and last name for '" + MBCounselor.toString(canonicalData, dataFile) + "'.");
 		String firstName = getFirstName(canonicalData);
 		String lastName = getLastName(canonicalData);
 		
@@ -37,13 +41,13 @@ public class MBCounselor
 		field = ImportField.findByName("Last_Name");
 		newValue[field.getIndex()] = firstName;
 		
-		boolean changed1 = setValue("canonical", "First_Name", newValue, canonicalData);
-		boolean changed2 = setValue("canonical", "Last_Name", newValue, canonicalData);
+		boolean changed1 = setValue("canonical", "First_Name", newValue, dataFile, canonicalData, dataFile);
+		boolean changed2 = setValue("canonical", "Last_Name", newValue, dataFile, canonicalData, dataFile);
 
 		return changed1 || changed2;
 	}
 	
-	public static boolean swapPhone1AndPhone2(String[] canonicalData)
+	public static boolean swapPhone1AndPhone2(String[] canonicalData, File dataFile)
 	{
 		//System.out.println("Swapping phone1 and phone2 for '" + MBCounselor.toString(canonicalData) + "'.");
 		String phone1 = getPhone1(canonicalData);
@@ -57,13 +61,13 @@ public class MBCounselor
 		field = ImportField.findByName("Phone2");
 		newValue[field.getIndex()] = phone1;
 		
-		boolean changed1 = setValue("canonical", "Phone1", newValue, canonicalData);
-		boolean changed2 = setValue("canonical", "Phone2", newValue, canonicalData);
+		boolean changed1 = setValue("canonical", "Phone1", newValue, dataFile, canonicalData, dataFile);
+		boolean changed2 = setValue("canonical", "Phone2", newValue, dataFile, canonicalData, dataFile);
 
 		return changed1 || changed2;
 	}
 	
-	public static boolean swapEmailAndEmail2(String[] canonicalData)
+	public static boolean swapEmailAndEmail2(String[] canonicalData, File dataFile)
 	{
 		//System.out.println("Swapping email and email2 for '" + MBCounselor.toString(canonicalData) + "'.");
 		String email = getEmail(canonicalData);
@@ -77,8 +81,8 @@ public class MBCounselor
 		field = ImportField.findByName("Email2");
 		newValue[field.getIndex()] = email;
 		
-		boolean changed1 = setValue("canonical", "Email", newValue, canonicalData);
-		boolean changed2 = setValue("canonical", "Email2", newValue, canonicalData);
+		boolean changed1 = setValue("canonical", "Email", newValue, dataFile, canonicalData, dataFile);
+		boolean changed2 = setValue("canonical", "Email2", newValue, dataFile, canonicalData, dataFile);
 		
 		return changed1 || changed2;
 	}
@@ -95,6 +99,15 @@ public class MBCounselor
 		ImportField field = ImportField.findByName("Registration_Number");
 		if(field == null) return false;
 		else return index == field.getIndex();
+	}
+	
+	public static void setLastName(String dataOrigin, String lastName, File newDataFile, String[] mbData, File mbDataFile)
+	{
+		String[] newValues = new String[mbData.length];
+		System.arraycopy(mbData, 0, newValues, 0, mbData.length);
+		ImportField field = ImportField.findByName("Last_Name");
+		newValues[field.getIndex()] = lastName;
+		setValue(dataOrigin, "Last_Name", newValues, newDataFile, mbData, mbDataFile);
 	}
 	
 	public static String getFirstName(String[] mbData)
@@ -137,19 +150,19 @@ public class MBCounselor
 		return getValue("Address2", mbData);
 	}
 
-	public static boolean setValue(String dataOrigin, String name, String[] newValue, String[] mbData)
+	public static boolean setValue(String dataOrigin, String name, String[] newValue, File newDataFile, String[] mbData, File oldDataFile)
 	{
 		ImportField field = ImportField.findByName(name);
-		return setValue(dataOrigin, field, newValue, mbData);
+		return setValue(dataOrigin, field, newValue, newDataFile, mbData, oldDataFile);
 	}
 
-	public static boolean setValue(String dataOrigin, int index, String[] newValue, String[] mbData)
+	public static boolean setValue(String dataOrigin, int index, String[] newValue, File newDataFile, String[] mbData, File oldDataFile)
 	{
 		ImportField field = ImportField.findByIndex(index);
-		return setValue(dataOrigin, field, newValue, mbData);
+		return setValue(dataOrigin, field, newValue, newDataFile, mbData, oldDataFile);
 	}
 
-	public static boolean setValue(String dataOrigin, ImportField field, String[] newValue, String[] mbData)
+	public static boolean setValue(String dataOrigin, ImportField field, String[] newValue, File newDataFile, String[] mbData, File oldDataFile)
 	{
 		boolean valueChanged = false;
 		
@@ -160,27 +173,41 @@ public class MBCounselor
 			if(newValue != null && newValue[field.getIndex()] != null &&
 			   newValue[field.getIndex()].length() > 0/* && (mbData[field.getIndex()] == null || mbData[field.getIndex()].length() <= 0)*/)
 			{
-				if(mbData[field.getIndex()] != null && mbData[field.getIndex()].length() > 0 && !newValue[field.getIndex()].equals(mbData[field.getIndex()]))
+				if((mbData[field.getIndex()] != null && mbData[field.getIndex()].length() > 0 && !newValue[field.getIndex()].equals(mbData[field.getIndex()])))
 				{
-					if(reportValuesChanged)
+					if(verbose || reportValuesChanged)
 					{
-						if(!newValue[field.getIndex()].startsWith(mbData[field.getIndex()]) &&
+						if(verbose || (/*!newValue[field.getIndex()].startsWith(mbData[field.getIndex()]) &&*/
 						   !alreadyContainsPhone(mbData, field, newValue) &&
-						   !isPhone(field))
+						   !isPhone(field)))
 						{
-							System.out.println("Changing value of field '" + field.getName() + "' from '" + mbData[field.getIndex()] + "' to '" + newValue[field.getIndex()] + "' --: " + toString(mbData) + " <--> " + toString(newValue));
+							System.out.println(">> Changing value of field '" + field.getName() + "' from '" + mbData[field.getIndex()] + "' to '" + newValue[field.getIndex()] + "' --: " + toString(mbData, oldDataFile) + " <--> " + toString(newValue, newDataFile));
 						}
 					}
 					
 					valueChanged = true;
 				}
 				
-				mbData[field.getIndex()] = newValue[field.getIndex()];
+//				if(MBCounselor.getFirstName(mbData).equalsIgnoreCase("ACKERMAN"))
+//				{
+//					System.out.println("Found the culprit: "+MBCounselor.getFirstName(mbData));
+//				}
+
+				//if the fields type is MBList then we need to concatenate the values rather than replace the values
+				if("Badges_Taught_Starts_Here".equals(field.getName()) &&
+				   mbData[field.getIndex()] != null && mbData[field.getIndex()].trim().length() > 0)
+				{
+					mbData[field.getIndex()] += ","+newValue[field.getIndex()];
+				}
+				else
+				{
+					mbData[field.getIndex()] = newValue[field.getIndex()];
+				}
 			}
 		}
 		else if(reportNotMergingBecauseOfOwnership)
 		{
-			System.out.println("Not merging data '" + newValue[field.getIndex()] + "' into field '" + field.getName() + "' becuase the data origin '" + dataOrigin + "' does not own it: " + field.getOwner());
+			System.out.println(">> Not merging data '" + newValue[field.getIndex()] + "' into field '" + field.getName() + "' becuase the data origin '" + dataOrigin + "' does not own it: " + field.getOwner());
 		}
 		
 		return valueChanged;
@@ -221,17 +248,40 @@ public class MBCounselor
 	}
 	
 	
-	public static String toString(String[] vals)
+	public static String toString(String[] values, File mostRecentDataFile)
 	{
+		if(mostRecentDataFile == null)
+		{
+			throw new NullPointerException("The parameter '"+mostRecentDataFile+"' is null, this is not allowed!!");
+		}
 		String retVal = "";
-		for(String val : vals)
+		for(String val : values)
 		{
 			retVal += val + " :: ";
 		}
+		retVal += mostRecentDataFile;
 		
 		return retVal;
 	}
+	
+	public static String toString(MBCounselor counselor)
+	{
+		return toString(counselor.getValues(), counselor.getMostRecentDataFile());
+	}
 
+	public static boolean firstnamesMatch(String thisFirstName, String otherFirstName)
+	{
+		if(thisFirstName != null)
+		{
+			thisFirstName = thisFirstName.replace(" ", "");
+		}
+		if(otherFirstName != null)
+		{
+			otherFirstName = otherFirstName.replace(" ", "");
+		}
+
+		return (thisFirstName != null && otherFirstName != null && (thisFirstName.indexOf(otherFirstName) != -1 || otherFirstName.indexOf(thisFirstName) != -1));
+	}
 
 	
 	
@@ -240,15 +290,39 @@ public class MBCounselor
 
 	
 	protected String[] values;
+	protected int lastNameMapIndex;
+	protected File mostRecentDataFile;
+	protected String lastNameSuffix;
 	
 	public MBCounselor(String[] values)
 	{
 		this.values = values;
+		this.lastNameMapIndex = -1;
 	}
 	
+	public File getMostRecentDataFile()
+	{
+		return mostRecentDataFile;
+	}
+	
+	public void setMostRecentDataFile(File mostRecentDataFile)
+	{
+		this.mostRecentDataFile = mostRecentDataFile;
+	}
+	
+	public int getLastNameMapIndex()
+	{
+		return lastNameMapIndex;
+	}
+	
+	public void setLastNameMapIndex(int lastNameMapIndex)
+	{
+		this.lastNameMapIndex = lastNameMapIndex;
+	}
+
 	public String toString()
 	{
-		return toString(values);
+		return toString(this);
 	}
 	
 	public String[] getValues()
@@ -318,6 +392,8 @@ public class MBCounselor
 
 	public boolean addressesMatch(String[] canonicalData)
 	{
+		if(this.getAddress1() == null) return false;
+		
 		return this.getAddress1().equalsIgnoreCase(getAddress1(canonicalData));
 	}
 
@@ -325,24 +401,24 @@ public class MBCounselor
 	{
 		String thisFirstName = this.getFirstName();
 		String otherFirstName = getFirstName(canonicalData);
-		
-		return (thisFirstName != null &&);
+
+		return firstnamesMatch(thisFirstName, otherFirstName);
 	}
 
-	public boolean[] mergeData(String[] mbData, String dataOrigin)
+	public boolean[] mergeData(String[] mbData, File newDataFile, String dataOrigin)
 	{
 		boolean[] hasChanged = new boolean[values.length];
 		// based on the dataOrigin, use the mbData to update this MBCounselor's values array
 		for(int i = 0; i < values.length; ++i)
 		{
-			hasChanged[i] = setValue(dataOrigin, i, mbData, values);
+			hasChanged[i] = setValue(dataOrigin, i, mbData, newDataFile, values, mostRecentDataFile);
 		}
 		
 		return hasChanged;
 	}
 
 	// personId, lastName, firstName, address1, address2, phone1, phone2, fax, email, email2
-	public int matchesOtherAttributes(String[] canonicalData, String dataOrigin, boolean checkStandardComparisons)
+	public int matchesOtherAttributes(String[] canonicalData, File dataFile, String dataOrigin, boolean checkStandardComparisons)
 	{
 		int matchCount = 0;
 		
@@ -373,10 +449,11 @@ public class MBCounselor
 				
 				// this should almost never happen, so I am logging it
 				System.out.println("The last names do not match inside matchesOtherAttributes " + myLastName + " :: " + paramLastName);
-				System.out.println("Here are the two counselors " + this + " <> " + MBCounselor.toString(canonicalData));
+				System.out.println("Here are the two counselors " + this + " <> " + MBCounselor.toString(canonicalData, dataFile));
 				//return false;
 				return 0;
 			}
+			
 		}
 		
 		// last names match by now, let's see if we match on one other piece of data
@@ -407,7 +484,7 @@ public class MBCounselor
 		{
 			if(myField.equals(paramField))
 			{
-				swapPhone1AndPhone2(canonicalData);
+				swapPhone1AndPhone2(canonicalData, dataFile);
 				++matchCount; //return true;
 			}
 		}
@@ -417,7 +494,7 @@ public class MBCounselor
 		{
 			if(myField.equals(paramField))
 			{
-				swapPhone1AndPhone2(canonicalData);
+				swapPhone1AndPhone2(canonicalData, dataFile);
 				++matchCount; //return true;
 			}
 		}
@@ -457,7 +534,7 @@ public class MBCounselor
 		{
 			if(myField.equalsIgnoreCase(paramField))
 			{
-				swapEmailAndEmail2(canonicalData);
+				swapEmailAndEmail2(canonicalData, dataFile);
 				++matchCount; //return true;
 			}
 		}
@@ -467,7 +544,7 @@ public class MBCounselor
 		{
 			if(myField.equalsIgnoreCase(paramField))
 			{
-				swapEmailAndEmail2(canonicalData);
+				swapEmailAndEmail2(canonicalData, dataFile);
 				++matchCount; //return true;
 			}
 		}
@@ -492,21 +569,32 @@ public class MBCounselor
 			//return true;
 		}
 				
-//		if(checkStandardComparisons)
-//		{
-//			myField = this.getFirstName();
-//			paramField = MBCounselor.getFirstName(canonicalData);
-//			if(myField != null && paramField != null && myField.length() > 0 && paramField.length() > 0)
-//			{
-//				if(myField.substring(0,3).equalsIgnoreCase(paramField.substring(0,3)))
-//				{
-//					System.out.println("Using the first three chars of firstName to get a match: " + this + " <--> " + toString(canonicalData));
-//					++matchCount; //return true;
-//				}
-//			}
-//		}
+		if(checkStandardComparisons)
+		{
+			myField = this.getFirstName();
+			paramField = MBCounselor.getFirstName(canonicalData);
+			if(myField != null && paramField != null && myField.length() > 0 && paramField.length() > 0)
+			{
+				if(this.firstnamesMatch(canonicalData))
+				{
+					System.out.println(">> Using the firstnamesMatch comparison to get a match: " + this + " <--> " + toString(canonicalData, dataFile));
+					new Exception().printStackTrace(System.out);
+					++matchCount; //return true;
+				}
+			}
+		}
 		
 		return matchCount;
+	}
+
+	public void setLastNameSuffix(String lastNameSuffix)
+	{
+		this.lastNameSuffix = lastNameSuffix;
+	}
+
+	public String getLastNameSuffix()
+	{
+		return lastNameSuffix;
 	}
 
 }

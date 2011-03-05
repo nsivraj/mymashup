@@ -5,19 +5,6 @@ import java.util.Map;
 
 public abstract class AbstractCanonicalizer implements Canonicalizer
 {
-	public static final String ALL_NUMBERS = "AllNumbers";
-	public static final String STRING = "String";
-	public static final String NAME = "Name";
-	public static final String EMAIL = "Email";
-	public static final String STATE_OPTION = "StateOption";
-	public static final String US_POSTAL_CODE = "USPostalCode";
-	public static final String COUNTRY_OPTION = "CountryOption";
-	public static final String PHONE = "Phone";
-	public static final String UNIT_OPTION = "UnitOption";
-	public static final String DATE = "Date";
-	public static final String ACTIVE_OPTION = "ActiveOption";
-	public static final String MB_LIST = "MBList";
-	
 	private static final Map<String, String> stateOptions = new HashMap<String, String>();
 	private static final Map<String, String> countryOptions = new HashMap<String, String>();
 	private static final Map<String, String> unitOptions = new HashMap<String, String>();
@@ -25,6 +12,8 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	static
 	{
 		stateOptions.put("UT", "UT");
+		//there is a person with State set to PA in the DoubleknotExport.20101103.xls file, his name is Stinger
+		stateOptions.put("PA", "PA");
 		
 		countryOptions.put("US", "US");
 		
@@ -90,15 +79,17 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	{
 		String[] canonicalData = new String[ImportField.getFieldCount()];
 		
+		// the length and order of mbData is different than the length and order or canonicalData
 		for(int i = 0; i < mbData.length; ++i)
 		{
 			ImportField field = ImportField.findByName(mapping[i]);
-			if(field != null && (dataOrigin.equals(field.getOwner()) || "canonical".equalsIgnoreCase(dataOrigin)))
+			if(field != null/* && (dataOrigin.equals(field.getOwner()) || "canonical".equalsIgnoreCase(dataOrigin))*/)
 			{
 				canonicalData[field.getIndex()] = getCanonicalData(canonicalData[field.getIndex()], mbData[i], field);
 			}
 		}
 
+		// the length and order of mbData is different than the length and order or canonicalData
 		for(int i = 0; i < canonicalData.length; ++i)
 		{
 			if(canonicalData[i] == null)
@@ -128,6 +119,13 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			else if(STRING.equals(field.getType()) || NAME.equals(field.getType()) || EMAIL.equals(field.getType()))
 			{
 				canonicalData = canonicalData.toUpperCase();
+				if("Last_Name".equals(field.getName()) && (canonicalData.endsWith(" JR") || canonicalData.endsWith(" DR") || canonicalData.endsWith(" IV")))
+				{
+					// DONE: check for IV and figure out a way to keep the lastname suffix
+					String origCanonicalData = canonicalData;
+					canonicalData = origCanonicalData.substring(0, origCanonicalData.length() - 3);
+					canonicalData += MBCounselor.LASTNAME_SUFFIX_INDICATOR+origCanonicalData.substring(origCanonicalData.length() - 3).trim();
+				}
 			}
 			else if(STATE_OPTION.equals(field.getType()))
 			{
@@ -210,11 +208,11 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				canonicalData = getCanonicalMBNumber(canonicalData);
 				if((canonicalData == null || canonicalData.length() <= 0) && currentCanonicalData == null)
 				{
-					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a Merit Badge mapping: " + data);
+					//throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a Merit Badge mapping: " + data + " :: " + canonicalData);
 				}
 				else
 				{
-					if(currentCanonicalData != null && currentCanonicalData.length() > 0)
+					if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null)
 					{
 						canonicalData = currentCanonicalData + "," + canonicalData;
 					}
@@ -270,6 +268,34 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				displayVal = value.substring(0,3) + "-" + value.substring(3);
 			}
 		}
+		else if(MB_LIST.equals(field.getType()))
+		{
+			// TODO: add code here to remove duplicates
+			String[] mbVals = displayVal.split(",");
+			displayVal = "";
+			for(int i = 0; i < mbVals.length; ++i)
+			{
+				for(int j = i+1; j < mbVals.length; ++j)
+				{
+					if(mbVals[i].equalsIgnoreCase(mbVals[j]))
+					{
+						mbVals[i] = "";
+					}
+				}
+				
+				if(mbVals[i].length() > 0)
+				{
+					displayVal += mbVals[i] + ",";
+				}
+			}
+			
+			if(displayVal.endsWith(","))
+			{
+				displayVal = displayVal.substring(0, displayVal.length() - 1);
+			}
+			
+			displayVal = "\"" + displayVal + "\"";
+		}
 		
 		return displayVal.trim();
 	}
@@ -285,6 +311,10 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			// instead of just appending values[i], rather make sure values[i] is displayed properly!!
 			ImportField field = ImportField.findByIndex(i);
 			buf.append(values[i] == null ? "" : getCanonicalDisplayString(values[i], field));
+			if(values[i] != null && "Last_Name".equals(field.getName()) && counselor.getLastNameSuffix() != null)
+			{
+				buf.append(" "+getCanonicalDisplayString(counselor.getLastNameSuffix(), field));
+			}
 			
 			if(i < (values.length + 1))
 			{

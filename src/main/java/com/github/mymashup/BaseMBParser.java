@@ -104,33 +104,61 @@ public abstract class BaseMBParser implements MBParser
 				if(mbData != null)
 				{
 					mbData = canonicalizer.getCanonicalData(dataOrigin, mbData, mapping);
+					// fix the last name if it has the |||| set of characters in it
+					String lastNameSuffix = MBCounselor.getLastName(mbData);
+					if(lastNameSuffix != null)
+					{
+						int indexOfIndicator = lastNameSuffix.indexOf(MBCounselor.LASTNAME_SUFFIX_INDICATOR);
+						if(indexOfIndicator != -1)
+						{
+							MBCounselor.setLastName(this.getDataOrigin(), lastNameSuffix.substring(0, indexOfIndicator), toParse, mbData, toParse);
+							lastNameSuffix = lastNameSuffix.substring(indexOfIndicator+MBCounselor.LASTNAME_SUFFIX_INDICATOR.length());
+						}
+						else
+						{
+							lastNameSuffix = null;
+						}
+					}
 					if("GRIFFIN".equalsIgnoreCase(mbData[0]))
 					{
 						//System.out.println("Found GRIFFIN");
 					}
 					
 					MBCounselor counselor = canonicalData.findCounselor(mbData, this);
-					if(counselor == null)
+					if(counselor == null || doNotMergeData(counselor, mbData))
 					{
+						if(counselor != null)
+						{
+							System.out.println(">> Found counselor '" + counselor + "' but not merging data '" + MBCounselor.toString(mbData, toParse) + "' "+this.getClass());
+						}
 						counselor = new MBCounselor(mbData);
+						counselor.setMostRecentDataFile(toParse);
 						canonicalData.addCounselor(counselor, this);
 					}
 					else
 					{
 						String[] oldValues = new String[mbData.length];
 						System.arraycopy(counselor.getValues(), 0, oldValues, 0, mbData.length);
-						boolean[] hasChanged = counselor.mergeData(mbData, getDataOrigin());
+						File oldMostRecentDataFile = counselor.getMostRecentDataFile();
+						boolean[] hasChanged = counselor.mergeData(mbData, toParse, getDataOrigin());
 						for(int i = 0; i < hasChanged.length; ++i)
 						{
+							//if(hasChanged[i]) { counselor.setMostRecentDataFile(toParse); }
+							
 							if(hasChanged[i] && MBCounselor.isLastName(i))
 							{
-								canonicalData.reorderLastNameMap(counselor, oldValues, i);
+								canonicalData.reorderLastNameMap(counselor, oldValues, oldMostRecentDataFile, i, this);
 							}
 							else if(hasChanged[i] && MBCounselor.isRegistrationNumber(i))
 							{
-								canonicalData.reorderRegistrationNumberMap(counselor, oldValues, i);
+								canonicalData.reorderRegistrationNumberMap(counselor, oldValues, oldMostRecentDataFile, i);
 							}
 						}
+					}
+					
+					if(lastNameSuffix != null && counselor != null)
+					{
+						counselor.setLastNameSuffix(lastNameSuffix);
 					}
 				}
 			}
