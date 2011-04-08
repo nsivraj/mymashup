@@ -1,5 +1,6 @@
 package com.github.mymashup;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -137,7 +138,7 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				
 				if(canonicalData == null)
 				{
-					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a STATE_OPTION mapping: " + data);
+					//throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a STATE_OPTION mapping: " + data);
 				}
 			}
 			else if(US_POSTAL_CODE.equals(field.getType()))
@@ -203,6 +204,20 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a ACTIVE_OPTION mapping: " + data);
 				}
 			}
+			else if("Note".equals(field.getName()))
+			{
+				if((canonicalData == null || canonicalData.length() <= 0) && currentCanonicalData == null)
+				{
+					//throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a Merit Badge mapping: " + data + " :: " + canonicalData);
+				}
+				else
+				{
+					if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null && currentCanonicalData.indexOf(canonicalData) == -1)
+					{
+						canonicalData = currentCanonicalData + " -- " + canonicalData;
+					}
+				}
+			}
 			else if(MB_LIST.equals(field.getType()))
 			{
 				canonicalData = getCanonicalMBNumber(canonicalData);
@@ -259,13 +274,21 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		}
 		else if(PHONE.equals(field.getType()))
 		{
-			if(value.length() == 10)
+			if(value.length() == 7)
+			{
+				displayVal = value.substring(0,3) + "-" + value.substring(3);
+			}
+			else if(value.length() == 10)
 			{
 				displayVal = "(" + value.substring(0,3) + ")" + value.substring(3,6) + "-" + value.substring(6);
 			}
-			else if(value.length() == 7)
+			else if(value.length() > 10)
 			{
-				displayVal = value.substring(0,3) + "-" + value.substring(3);
+				displayVal = "(" + value.substring(0,3) + ")" + value.substring(3,6) + "-" + value.substring(6,10) + " x" + value.substring(10);
+			}
+			else if(value.length() > 0)
+			{
+				throw new RuntimeException("The phone number '"+value+"' is longer than zero but not long enough");
 			}
 		}
 		else if(MB_LIST.equals(field.getType()))
@@ -285,24 +308,46 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				
 				if(mbVals[i].length() > 0)
 				{
-					displayVal += mbVals[i] + ",";
+					if(MeritBadge.prepareForImport)
+					{
+						displayVal += mbVals[i] + "\t";
+					}
+					else if(MeritBadge.showMBNames)
+					{
+						displayVal += MeritBadge.findByNumber(Integer.parseInt(mbVals[i])).getDisplayName() + ",";
+					}
+					else
+					{
+						displayVal += mbVals[i] + ",";
+					}
 				}
 			}
 			
-			if(displayVal.endsWith(","))
+			if(displayVal.endsWith(",") || displayVal.endsWith("\t"))
 			{
 				displayVal = displayVal.substring(0, displayVal.length() - 1);
 			}
 			
-			displayVal = "\"" + displayVal + "\"";
+			if(!MeritBadge.prepareForImport) { displayVal = "\"" + displayVal + "\""; }
 		}
 		
 		return displayVal.trim();
 	}
 	
 	
+	public void swapFirstnameAndLastnameIfNeeded(MBCounselor counselor)
+	{
+		// need to handle the last 130 counselors and the lastname first / firstname last problem
+		String swapKey = counselor.getLastName().toLowerCase()+"_"+counselor.getFirstName().toLowerCase();
+		if(MergeMBCounselors.swapNameProps.get(swapKey) != null)
+		{
+			MBCounselor.swapFirstNameAndLastName(counselor.values, new File("canonical"));
+		}
+	}
+	
 	public String getCanonicalString(MBCounselor counselor)
 	{
+		swapFirstnameAndLastnameIfNeeded(counselor);
 		String[] values = counselor.getValues();
 		StringBuilder buf = new StringBuilder();
 		

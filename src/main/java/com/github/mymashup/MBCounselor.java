@@ -194,10 +194,20 @@ public class MBCounselor
 //				}
 
 				//if the fields type is MBList then we need to concatenate the values rather than replace the values
-				if("Badges_Taught_Starts_Here".equals(field.getName()) &&
+				if(("Badges_Taught_Starts_Here".equals(field.getName()) || "Note".equals(field.getName())) &&
 				   mbData[field.getIndex()] != null && mbData[field.getIndex()].trim().length() > 0)
 				{
-					mbData[field.getIndex()] += ","+newValue[field.getIndex()];
+					if("Note".equals(field.getName()))
+					{
+						if(mbData[field.getIndex()].indexOf(newValue[field.getIndex()]) == -1)
+						{
+							mbData[field.getIndex()] += " -- "+newValue[field.getIndex()];
+						}
+					}
+					else
+					{
+						mbData[field.getIndex()] += ","+newValue[field.getIndex()];
+					}
 				}
 				else
 				{
@@ -440,7 +450,7 @@ public class MBCounselor
 			String paramLastName = MBCounselor.getLastName(canonicalData);
 			if(myLastName == null || myLastName.length() <= 0 ||
 			   paramLastName == null || paramLastName.length() <= 0 ||
-			   !myLastName.equalsIgnoreCase(paramLastName))
+			   !myLastName.replace(" ", "").equalsIgnoreCase(paramLastName.replace(" ", ""))) // I added the .replace(" ","") in order to get the Dirk Vanwagoner record merged correctly
 			{
 				//MAY need to add code to see if the first name and last name got swapped in the data
 				//if the dataOrigin of the canonicalData parameter is DoubleKnot then we need to

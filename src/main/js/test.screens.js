@@ -3,11 +3,11 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /*jslint nomen: false, debug: false,
     evil: false, onevar: true */
-/*global globalURLHandler: false, WebScreens: false */
+/*global webActor: false, WebActor: false */
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// this section is for functions that test these WebScreens
+// this section is for functions that test these WebActor
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 var loadedTestAt = new Date();
 
@@ -18,7 +18,7 @@ function reportTest()
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// this section is for the startup functions for these WebScreens
+// this section is for the startup functions for these WebActor
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 this.print("****************************************************");
 this.print("*");
@@ -32,14 +32,14 @@ function startTest()
 	params.invokedFromMethod = "startTest";
 	params.PersistentCookie = false;
 	
-	return globalURLHandler.webScreens.gotoNextURL("http://www.gmail.com/", "gmailLogin", params);
+	return webActor.gotoNextURL("http://www.gmail.com/", "gmailLogin", params);
 }
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// this section is for the actual WebScreens methods
+// this section is for the actual WebActor methods
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
+WebActor.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
 {
 	//return (methodName === "gmailLogin" && screenURL.indexOf("/www.gmail.com") !== -1 && loadedURL.indexOf("www.google.com/accounts/ServiceLogin") !== -1);
 	return (
@@ -52,7 +52,7 @@ WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, p
 };
 
 
-WebScreens.prototype.gmailLogin = function (screenURL, loadedURL, params)
+WebActor.prototype.gmailLogin = function (screenURL, loadedURL, params)
 {
 	var screenResponse, mouseClick, creds;
 	
@@ -65,7 +65,7 @@ WebScreens.prototype.gmailLogin = function (screenURL, loadedURL, params)
 		this.getFormInput(this.domWindow, 'gaia_loginform', 'Passwd').value = creds[1]; //this.promptForInput(this.domWindow, 'Passwd');
 		this.getFormInput(this.domWindow, 'gaia_loginform', 'PersistentCookie').checked = params.PersistentCookie;
 
-		// TODO: this is where the logic goes to setup the WebScreens object for the next URL
+		// TODO: this is where the logic goes to setup the WebActor object for the next URL
 		// that will load as soon as the click event is dispatched below
 		
 		this.dispatchClickEvent(this.domWindow, this.getFormInput(this.domWindow, 'gaia_loginform', 'signIn'));

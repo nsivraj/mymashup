@@ -3,11 +3,11 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /*jslint nomen: false, debug: false,
     evil: false, onevar: true */
-/*global globalURLHandler: false, WebScreens: false */
+/*global webActor: false, WebActor: false */
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// this section is for functions that test these WebScreens
+// this section is for functions that test these WebActor
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 var loadedBSAAt = new Date();
 
@@ -18,7 +18,7 @@ function reportTest()
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-//this section is for the startup functions for these WebScreens
+//this section is for the startup functions for these WebActor
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 this.print("****************************************************");
 this.print("*");
@@ -87,16 +87,16 @@ function loadMBCounselors()
 	params.ActiveCode = true;
 	params.ShowAddress = true;
 	
-	//return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/logon.asp?orgkey=", "meritBadgeLogin", params);
-	//return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params);
-	return globalURLHandler.webScreens.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBNameList.asp", "counselorAdmin", params);
+	//return webActor.gotoNextURL("https://utahscouts.doubleknot.com/rosters/logon.asp?orgkey=", "meritBadgeLogin", params);
+	//return webActor.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params);
+	return webActor.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBNameList.asp", "counselorAdmin", params);
 }
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-//this section is for the actual WebScreens methods
+//this section is for the actual WebActor methods
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
+WebActor.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
 {
 	return (
 	    this.checkMethodRequest(
@@ -124,7 +124,7 @@ WebScreens.prototype.allowMethod = function (methodName, screenURL, loadedURL, p
 };
 
 
-WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
+WebActor.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 {
 	var mouseClick, creds;
 
@@ -137,7 +137,7 @@ WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 		this.getFormInput(this.domWindow, 'LogonForm', 'Password').value = creds[1];
 		this.getFormInput(this.domWindow, 'LogonForm', 'savePWD').checked = params.savePWD;
 
-		// DONE: this is where the logic goes to setup the WebScreens object for the next URL
+		// DONE: this is where the logic goes to setup the WebActor object for the next URL
 		// that will load as soon as the click event is dispatched below
 		this.gotoNextURL("", "gotoMBAdmin", params);
 		
@@ -153,7 +153,7 @@ WebScreens.prototype.meritBadgeLogin = function (screenURL, loadedURL, params)
 
  
 // https://utahscouts.doubleknot.com/rosters/default.asp?UserName=NORMAN.JARVIS@GMAIL.COM
-WebScreens.prototype.gotoMBAdmin = function (screenURL, loadedURL, params)
+WebActor.prototype.gotoMBAdmin = function (screenURL, loadedURL, params)
 {
 	this.repl.print("__________Method 'gotoMBAdmin' invoked: '" + screenURL + "' :: '" + loadedURL + "'");
 	this.gotoNextURL("https://utahscouts.doubleknot.com/rosters/MBdefault.asp", "mbAdmin", params);
@@ -161,7 +161,7 @@ WebScreens.prototype.gotoMBAdmin = function (screenURL, loadedURL, params)
 
 
 //https://utahscouts.doubleknot.com/rosters/MBdefault.asp
-WebScreens.prototype.mbAdmin = function (screenURL, loadedURL, params)
+WebActor.prototype.mbAdmin = function (screenURL, loadedURL, params)
 {
 	var mouseClick;
 	
@@ -188,7 +188,7 @@ WebScreens.prototype.mbAdmin = function (screenURL, loadedURL, params)
 };
 
 
-WebScreens.prototype.counselorAdmin = function (screenURL, loadedURL, params)
+WebActor.prototype.counselorAdmin = function (screenURL, loadedURL, params)
 {
 	var mouseClick, anotherCounselor;
 	
@@ -224,7 +224,7 @@ WebScreens.prototype.counselorAdmin = function (screenURL, loadedURL, params)
 
 
 
-WebScreens.prototype.createAndEditCounselor = function (screenURL, loadedURL, params)
+WebActor.prototype.createAndEditCounselor = function (screenURL, loadedURL, params)
 {
 	var mouseClick, anotherCounselor;
 	
@@ -271,11 +271,11 @@ WebScreens.prototype.createAndEditCounselor = function (screenURL, loadedURL, pa
 };
 
 
-WebScreens.prototype.getNextCounselor = function (params)
+WebActor.prototype.getNextCounselor = function (params)
 {
 	var thereIsAnotherCounselor = false;
 	
-	if(!this.counselorFile)
+	if (!this.counselorFile)
 	{
 		// TODO: open the file and assign the handle to the this.counselorFile variable
 		

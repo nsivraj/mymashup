@@ -6,14 +6,19 @@ import java.util.Properties;
 
 public class MergeMBCounselors
 {
+	public static final String SWAP_NAME_PROPS = "swap.firstname.and.lastname.properties";
+	public static final Properties swapNameProps;
 	public static final String MAPPING_PROPS_NAME = "data.field.mapping.properties";
 	private static final Properties mappingProps;
 	static
 	{
+		swapNameProps = Utils.loadProps(SWAP_NAME_PROPS);
 		mappingProps = Utils.loadProps(MAPPING_PROPS_NAME);
 		MBCounselor.reportValuesChanged = Boolean.valueOf(mappingProps.getProperty("reportValuesChanged"));
 		MBCounselor.reportNotMergingBecauseOfOwnership = Boolean.valueOf(mappingProps.getProperty("reportNotMergingBecauseOfOwnership"));
 		MBCounselor.verbose = Boolean.valueOf(mappingProps.getProperty("verbose"));
+		MeritBadge.showMBNames = Boolean.valueOf(mappingProps.getProperty("showMBNames"));
+		MeritBadge.prepareForImport = Boolean.valueOf(mappingProps.getProperty("prepareForImport"));
 		//canonicalData = new CanonicalParser();
 
 		//try

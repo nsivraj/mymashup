@@ -6,6 +6,8 @@ import java.util.Properties;
 
 public class MeritBadge
 {
+	public static boolean prepareForImport = false;
+	public static boolean showMBNames = false;
 	public static final String MB_PROPS_NAME = "merit.badges.properties";
 	public static final HashMap<String, MeritBadge> canonicalName2MB = new HashMap<String, MeritBadge>();
 	public static final HashMap<Integer, MeritBadge> int2MB = new HashMap<Integer, MeritBadge>();

@@ -7,17 +7,17 @@
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// load in the kernel.js and also the WebScreens specified via the
-// whichScreens parameter
+// load in the kernel.js and also the WebActor specified via the
+// whichActor parameter
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 this.print("****************************************************");
 this.print("*");
-this.print("* Start with repl.loadScreens(<screen_set>); where <screen_set>");
-this.print("* is \"bsa\" or \"test\". Exit with repl.quit();.");
+this.print("* Start with repl.loadActor(<actor_set>); where <actor_set>");
+this.print("* is \"bsa\" or \"test\" or \"mint\" or \"crumbs\". Exit with repl.quit();.");
 this.print("*");
 this.print("****************************************************");
 
-function loadScreens(whichScreens)
+function loadActor(whichActor)
 {
 	var mozreplInitUrl, mozreplInitDir, endIndex;
 	
@@ -31,13 +31,21 @@ function loadScreens(whichScreens)
 	//this.print("mozreplInitDir : " + mozreplInitDir);
 
 	repl.load(mozreplInitDir + "/kernel.js", repl);
-	if ("bsa" === whichScreens)
+	if ("bsa" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/bsa.screens.js", repl);
+		repl.load(mozreplInitDir + "/bsa.actor.js", repl);
 	}
-	else if ("test" === whichScreens)
+	else if ("test" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/test.screens.js", repl);
+		repl.load(mozreplInitDir + "/test.actor.js", repl);
+	}
+	else if ("mint" === whichActor)
+	{
+		repl.load(mozreplInitDir + "/mint.actor.js", repl);
+	}
+	else if ("crumbs" === whichActor)
+	{
+		repl.load(mozreplInitDir + "/crumbs.js", repl);
 	}
 }
 
@@ -46,11 +54,25 @@ function loadScreens(whichScreens)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 // this section is for short cut methods to by pass the reloading of the .js
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-function reloadScript()
+function reloadActor(whichActor)
 {
 	repl.loadInit();
-	//repl.loadScreens("test");
-	//repl.startTest();
-	repl.loadScreens("bsa");
-	repl.loadMBCounselors();
+	
+	if ("test" === whichActor)
+	{
+		repl.loadActor("test");
+	}
+	else if ("bsa" === whichActor)
+	{
+		repl.loadActor("bsa");
+	}
+	else if ("mint" === whichActor)
+	{
+		repl.loadActor("mint");
+	}
+	else if ("crumbs" === whichActor)
+	{
+		repl.loadActor("crumbs");
+	}
 }
+

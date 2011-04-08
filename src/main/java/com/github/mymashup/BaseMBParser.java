@@ -86,6 +86,8 @@ public abstract class BaseMBParser implements MBParser
 		}
 	}*/
 	
+	
+	
 	public void merge(CanonicalData canonicalData, boolean hasFirstRow) throws IOException
 	{
 		if(toParse.exists())

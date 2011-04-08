@@ -4,3 +4,4 @@ public class DoubleKnotCanonicalizer extends AbstractCanonicalizer
 {
 
 }
+

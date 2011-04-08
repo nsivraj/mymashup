@@ -105,11 +105,11 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 				String lastName = MBCounselor.getLastName(canonicalData);
 				if(lastName != null)
 				{
-					lastName = lastName.toLowerCase().replace(" ", ""); need to add the .replace call on the other toLowerCase() calls, I think
-					if("GREGORY".equalsIgnoreCase(lastName))
+					lastName = lastName.toLowerCase().replace(" ", "");
+					if("vanwagoner".equalsIgnoreCase(lastName))
 					{
-						//System.out.println("Found GREGORY");
-						//System.out.flush();
+						System.out.println("Found vanwagoner");
+						System.out.flush();
 					}
 					List<MBCounselor> sameLastName = lastNameMap.get(lastName);
 					if(sameLastName != null)
@@ -149,7 +149,7 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 					String firstName = MBCounselor.getFirstName(canonicalData);
 					if(firstName != null)
 					{
-						firstName = firstName.toLowerCase();
+						firstName = firstName.toLowerCase().replace(" ", "");
 						List<MBCounselor> sameFirstName = lastNameMap.get(firstName);
 						if(sameFirstName != null)
 						{
@@ -217,7 +217,7 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 	{
 		if(lastName != null)
 		{
-			lastName = lastName.toLowerCase();
+			lastName = lastName.toLowerCase().replace(" ", "");
 			if("GRIFFIN".equalsIgnoreCase(lastName))
 			{
 				//System.out.println("Found GRIFFIN");
@@ -273,7 +273,7 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 		System.out.println(">> Reordering the lastNameMap from '" + MBCounselor.toString(oldValues, oldToParse) + "' to '" + counselor.toString() + "'");
 		
 		// find the counselor using the old last name and remove the counselor at counselorIndex
-		List<MBCounselor> sameLastName = lastNameMap.get(oldValues[oldValuesIndex].toLowerCase());
+		List<MBCounselor> sameLastName = lastNameMap.get(oldValues[oldValuesIndex].toLowerCase().replace(" ", ""));
 		int counselorIndex = counselor.getLastNameMapIndex();
 		if(counselorIndex < 0)
 		{
