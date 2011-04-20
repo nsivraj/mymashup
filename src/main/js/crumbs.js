@@ -22,10 +22,11 @@ function CrumbEvent(event)
     // TODO: the event object being passed in could be of type CrumbEvent
     
     this.type = event.type;
+    this.waitForReload = false;
     
     this.toString = function ()
     {
-        return this.type;
+        return this.type + " :: " + this.waitForReload;
     };
 }
 
@@ -60,7 +61,7 @@ function record()
     var domWindow = webActor.origDomWindow,
     chromeWin = webActor.origChromeWin,
     prevTitle, prevEl, prevOutline,
-    result = {};
+    result = {}, params = {};
     
     // record what the location of the current page is
     crumbs.startingURL = domWindow.document.location.href;
@@ -76,7 +77,7 @@ function record()
     {
         var curEl = event.target;
 
-        //webActor.findDOMWindow(event).document.title =
+        //webActor.findEventWindow(event).document.title =
         //    '<' + curEl + '> in ' + curEl.ownerDocument.location.href;
 
         if (prevEl)
@@ -114,8 +115,8 @@ function record()
         // so that we can get to the next page
         
         // TODO: change 'event.target' below to the xpath of 'event.target'
-        //crumbs.push(webActor.findDOMWindow(event).document.location.href + "__||__keypress__||__" + event.target);
-        localDomWindow = webActor.findDOMWindow(event);
+        //crumbs.push(webActor.findEventWindow(event).document.location.href + "__||__keypress__||__" + event.target);
+        localDomWindow = webActor.findEventWindow(event);
         crumbs.push(new Crumb(localDomWindow.document.location.href, event, webActor.getElementXPath(event.target)));
     }
     
@@ -123,8 +124,8 @@ function record()
     function reset(event)
     {
         prevEl.style.outline = prevOutline;
-        //webActor.findDOMWindow(event).top.title = prevTitle;
-        //webActor.findDOMWindow(event).document.title = prevTitle;
+        //webActor.findEventWindow(event).top.title = prevTitle;
+        //webActor.findEventWindow(event).document.title = prevTitle;
     }
 
 
@@ -166,8 +167,8 @@ function record()
         else
         {
             // TODO: change 'event.target' below to the xpath of 'event.target'
-            //crumbs.push(webActor.findDOMWindow(event).document.location.href + "__||__click__||__" + event.target);
-            localDomWindow = webActor.findDOMWindow(event);
+            //crumbs.push(webActor.findEventWindow(event).document.location.href + "__||__click__||__" + event.target);
+            localDomWindow = webActor.findEventWindow(event);
             crumbs.push(new Crumb(localDomWindow.document.location.href, event, webActor.getElementXPath(event.target)));
         }
         
@@ -177,6 +178,8 @@ function record()
     chromeWin.document.addEventListener('click', onClick, true);
     chromeWin.document.addEventListener('mouseover', onOver, true);
     chromeWin.document.addEventListener('keypress', onKeypress, true);
+    params.invokedFromMethod = "record";
+    webActor.gotoNextURL("", "recordReload", params);
     
     return result;
 }
@@ -217,6 +220,7 @@ function playback()
         }
         else
         {
+            webActor.gotoNextURL("", "crumbProcessor", params);
             webActor.crumbProcessor(crumbs.startingURL, crumbs.startingURL, params);
         }
     }
@@ -226,24 +230,44 @@ function playback()
 }
 
 
+
+
+
+
+
+
+
 WebActor.prototype.allowMethod = function (methodName, screenURL, loadedURL, params)
 {
-    //webActor.repl.print("inside allowMethod...");
+    //this.repl.print("inside allowMethod...");
     
     return (
         this.checkMethodRequest(
             methodName, ["crumbProcessor"],
             screenURL, "",
             loadedURL, ""
+        ) || this.checkMethodRequest(
+                methodName, ["recordReload"],
+                screenURL, "",
+                loadedURL, ""
         )
     );
 };
 
 
+
+WebActor.prototype.recordReload = function (screenURL, loadedURL, params)
+{
+    crumbs[crumbs.length - 1].crumbEvent.waitForReload = true;
+    this.repl.print("Recording the reload event for screenURL: " + screenURL + " and loadedURL " + loadedURL + " and crumb " + crumbs[crumbs.length - 1]);
+};
+
+
+
 WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
 {
-    //webActor.repl.print("Inside crumbProcessor!!!");
-    var crumb, crumbElements, i = params.crumbsIndex;
+    //this.repl.print("Inside crumbProcessor!!!");
+    var crumb, crumbElements, i = params.crumbsIndex, eventWindow = this.domWindow;
     
     // TODO: Now loop over each of the elements that was clicked on and click on them in turn
     for (; i < crumbs.length; i += 1)
@@ -251,20 +275,40 @@ WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
         params.crumbsIndex = i + 1;
         crumb = crumbs[i];
         // load in the saved elements and playback the events
-        webActor.repl.print("Playing back user event: " + crumb);
+        this.repl.print("Playing back user event: " + crumb + " at index " + i);
         
         if (crumb.crumbEvent.type === "click")
         {
             // find the dom element and click on it
-            crumbElements = webActor.getElementsUsingXPath(this.domWindow, crumb.elementXPath);
-            webActor.repl.print("The crumb element is: " + crumbElements + " :: " + crumbElements.length + " :: " + crumbElements[0]);
-            
+            crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
+            if (crumbElements.length <= 0)
+            {
+            	eventWindow = this.chromeWin;
+                crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
+            }
+            this.repl.print("The crumb element is: " + crumbElements + " :: " + crumbElements.length + " :: " + crumbElements[0]);
+
+            if (crumbElements.length > 0)
+            {
+                webActor.gotoNextURL("", "crumbProcessor", params);
+                this.dispatchClickEvent(eventWindow, crumbElements[0]);
+                if (crumb.crumbEvent.waitForReload)
+                {
+                    this.repl.print("Waiting for the page to reload...");
+                    break;
+                }
+            }
         }
         else if (crumb.crumbEvent.type === "keypress")
         {
             // find the dom element and send it the key event
-            crumbElements = webActor.getElementsUsingXPath(this.domWindow, crumb.elementXPath);
-            webActor.repl.print("The crumb element is: " + crumbElements + " :: " + crumbElements.length + " :: " + crumbElements[0]);
+            crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
+            if (crumbElements.length <= 0)
+            {
+            	eventWindow = this.chromeWin;
+                crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
+            }
+            this.repl.print("The crumb element is: " + crumbElements + " :: " + crumbElements.length + " :: " + crumbElements[0]);
         }
         
         // TODO: a couple of ways to find the dom element that crumbs[i] is referring to

@@ -332,16 +332,18 @@ function WebActor(repl)
     };
     
     
-    this.dispatchClickEvent = function (theDOMWindow, toClick)
+    this.dispatchClickEvent = function (eventWindow, toClick)
     {
-        // NOTE: do not use the this.currentScreenURL or the this.currentScreenMethod
+    	need to figure out how to click on a XUL button in the chrome window
+    	
+    	// NOTE: do not use the this.currentScreenURL or the this.currentScreenMethod
         // or the this.params objects inside this method as those objects are
         // being set for the next page by he time this method is called
         
-        //this.repl.print("Inside dispatchClickEvent 1");
-        var mouseClick = theDOMWindow.document.createEvent("MouseEvents");
+        this.repl.print("Inside dispatchClickEvent 1 : " + eventWindow);
+        var mouseClick = eventWindow.document.createEvent("MouseEvents");
         //this.repl.print("Inside dispatchClickEvent 2");
-        mouseClick.initMouseEvent('click', true, true, theDOMWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+        mouseClick.initMouseEvent('click', true, true, eventWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
         //this.repl.print("Inside dispatchClickEvent 3");
         toClick.dispatchEvent(mouseClick);
         //this.repl.print("Inside dispatchClickEvent 4");
@@ -531,9 +533,9 @@ function WebActor(repl)
     };
     
     
-    this.findDOMWindow = function (event)
+    this.findEventWindow = function (event)
     {
-        var foundDOMWindow = this.origDomWindow;
+        var foundWindow = this.origDomWindow;
         if (event)
         {
             //this.repl.print("event.target: " + event.target);
@@ -545,7 +547,7 @@ function WebActor(repl)
                event.target.ownerDocument.defaultView &&
                event.target.ownerDocument.defaultView.window)
             {
-                foundDOMWindow = event.target.ownerDocument.defaultView.window;
+                foundWindow = event.target.ownerDocument.defaultView.window;
             }
             else
             {
@@ -553,9 +555,9 @@ function WebActor(repl)
             }
         }
         
-        //this.repl.print("Found window: " + foundWindow);
+        this.repl.print("Found window: " + foundWindow);
         
-        return foundDOMWindow;
+        return foundWindow;
     };
     
     /**
