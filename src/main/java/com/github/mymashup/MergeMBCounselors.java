@@ -2,6 +2,7 @@ package com.github.mymashup;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Properties;
 
 public class MergeMBCounselors
@@ -38,7 +39,7 @@ public class MergeMBCounselors
 	
 	private CanonicalData canonicalData;
 	
-	public MergeMBCounselors() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
+	public MergeMBCounselors() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, ParseException
 	{
 		this.canonicalData = null;
 		System.out.println("--------------------------------------------------------BEGIN: canonical------------------------------------------------------------------------------");
@@ -46,7 +47,7 @@ public class MergeMBCounselors
 		System.out.println("--------------------------------------------------------END: canonical-------------------------------------------------------------------------------");
 	}
 
-	public void merge(String mappingKey) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
+	public void merge(String mappingKey) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, ParseException
 	{
 		// find the mappingKey.fullFilePath property
 		File toParse = new File(mappingProps.getProperty(mappingKey + ".fullFilePath"));
@@ -69,7 +70,7 @@ public class MergeMBCounselors
 		parser.merge(canonicalData, hasFirstRow);
 	}
 	
-	public void processData(String mappingKey) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
+	public void processData(String mappingKey) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, ParseException
 	{
 		if("all".equalsIgnoreCase(mappingKey))
 		{
@@ -91,7 +92,7 @@ public class MergeMBCounselors
 		canonicalData.persistData();
 	}
 	
-	public static final void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException
+	public static final void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, ParseException
 	{
 		MergeMBCounselors merge = new MergeMBCounselors();
 		if(args.length > 0) merge.processData(args[0]);

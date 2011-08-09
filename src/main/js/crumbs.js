@@ -31,15 +31,17 @@ function CrumbEvent(event)
 }
 
 
-function Crumb(crumbURL, event, elementXPath)
+function Crumb(crumbURL, event)
 {
     this.crumbURL = crumbURL;
-    this.elementXPath = elementXPath;
+    this.elementXPath = webActor.getElementXPath(event.target);
     // TODO: the event object being passed in could be of type CrumbEvent and if it is then
     // just use the event being passed in
     this.crumbEvent = new CrumbEvent(event);
 
-    webActor.repl.print("Adding event for: " + this.crumbEvent + " and element " + this.elementXPath + " and URL " + this.crumbURL);
+    var localDomWindow = webActor.findDOMWindow(event);
+    webActor.repl.print("Current web browser URL: " + localDomWindow.document.location.href);
+    webActor.repl.print("Adding event for [" + crumbs.length + "]: " + this.crumbEvent + " and element " + event.target + " and elementXPath " + this.elementXPath + " and URL " + this.crumbURL);
     
     this.toString = function ()
     {
@@ -94,7 +96,7 @@ function record()
     
     function onKeypress(event)
     {
-        var localDomWindow;
+        var localEventWindow;
 
         webActor.repl.print("Key has been pressed");
         
@@ -116,8 +118,8 @@ function record()
         
         // TODO: change 'event.target' below to the xpath of 'event.target'
         //crumbs.push(webActor.findEventWindow(event).document.location.href + "__||__keypress__||__" + event.target);
-        localDomWindow = webActor.findEventWindow(event);
-        crumbs.push(new Crumb(localDomWindow.document.location.href, event, webActor.getElementXPath(event.target)));
+        localEventWindow = webActor.findEventWindow(event);
+        crumbs.push(new Crumb(localEventWindow.document.location.href, event));
     }
     
     
@@ -144,7 +146,7 @@ function record()
 
     function onClick(event)
     {
-        var attr, localDomWindow;
+        var attr, localEventWindow, localDomWindow;
         
         // TODO: is event.target an action to cause a change in the page (i.e.
         //       <a href="..."...> or <input type="image"...> or <img ...> or
@@ -161,6 +163,8 @@ function record()
         if (event.target.tagName === "toolbarbutton" && event.target.id === "stop-button")
         {
             webActor.repl.print("Invoking the done(event) method because event.target.tagName === " + event.target.tagName + " and event.target.id === " + event.target.id);
+            localDomWindow = webActor.findDOMWindow(event);
+            webActor.repl.print("Ending URL in the web browser is: " + localDomWindow.document.location.href);
             done(event);
             //webActor.repl.print("onClick: 3");
         }
@@ -168,8 +172,8 @@ function record()
         {
             // TODO: change 'event.target' below to the xpath of 'event.target'
             //crumbs.push(webActor.findEventWindow(event).document.location.href + "__||__click__||__" + event.target);
-            localDomWindow = webActor.findEventWindow(event);
-            crumbs.push(new Crumb(localDomWindow.document.location.href, event, webActor.getElementXPath(event.target)));
+            localEventWindow = webActor.findEventWindow(event);
+            crumbs.push(new Crumb(localEventWindow.document.location.href, event));
         }
         
         //webActor.repl.print("onClick: 4");
@@ -267,13 +271,18 @@ WebActor.prototype.recordReload = function (screenURL, loadedURL, params)
 WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
 {
     //this.repl.print("Inside crumbProcessor!!!");
-    var crumb, crumbElements, i = params.crumbsIndex, eventWindow = this.domWindow;
+    var crumb, crumbElements, i = params.crumbsIndex, eventWindow = this.domWindow, localDomWindow;
     
     // TODO: Now loop over each of the elements that was clicked on and click on them in turn
     for (; i < crumbs.length; i += 1)
     {
         params.crumbsIndex = i + 1;
         crumb = crumbs[i];
+        
+        //this.debugEvent(params.event);
+        localDomWindow = webActor.findDOMWindow(params.event);
+        webActor.repl.print("Current web browser URL: " + localDomWindow.document.location.href);
+
         // load in the saved elements and playback the events
         this.repl.print("Playing back user event: " + crumb + " at index " + i);
         
@@ -283,19 +292,39 @@ WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
             crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
             if (crumbElements.length <= 0)
             {
-            	eventWindow = this.chromeWin;
+                eventWindow = this.chromeWin;
                 crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
             }
             this.repl.print("The crumb element is: " + crumbElements + " :: " + crumbElements.length + " :: " + crumbElements[0]);
 
             if (crumbElements.length > 0)
             {
-                webActor.gotoNextURL("", "crumbProcessor", params);
-                this.dispatchClickEvent(eventWindow, crumbElements[0]);
                 if (crumb.crumbEvent.waitForReload)
                 {
-                    this.repl.print("Waiting for the page to reload...");
+                    webActor.gotoNextURL("", "crumbProcessor", params);
+                    this.dispatchClickEvent(eventWindow, crumbElements[0]);
+                    this.repl.print("Waiting for the page to reload [" + i + "]... :: screenURL: " + screenURL + " :: loadedURL: " + loadedURL);
                     break;
+                }
+                else
+                {
+                    //for some reason these two lines do not cause the URL in the browser to change, not
+                    //sure why as it should, this is the case there the element that was
+                    //clicked on originally is an anchor rather than an href...
+                    
+                	actually, these two lines do cause the browser to change but the propagation of the
+                	event through the dom takes longer than the for loop that we are in and 
+                	so another onclick callback method needs to be provided so that it can
+                	launch back into this method to finish the for loop because an onload
+                	event does not get triggered by the this.dispatchClickEvent method call
+                	for an anchor; basically, this method needs to be reinvoked for every
+                	event that ocurrs as the event propagates through the DOM, so that one
+                	invocation only goes through the for loop once, in fact, the for loop
+                	should really be changed to a simple if statement and the params.crumbsIndex
+                	gets incremented by one.
+                	
+                    webActor.gotoNextURL("", "crumbProcessor", params);
+                    this.dispatchClickEvent(eventWindow, crumbElements[0]);
                 }
             }
         }
@@ -305,7 +334,7 @@ WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
             crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
             if (crumbElements.length <= 0)
             {
-            	eventWindow = this.chromeWin;
+                eventWindow = this.chromeWin;
                 crumbElements = this.getElementsUsingXPath(eventWindow, crumb.elementXPath);
             }
             this.repl.print("The crumb element is: " + crumbElements + " :: " + crumbElements.length + " :: " + crumbElements[0]);

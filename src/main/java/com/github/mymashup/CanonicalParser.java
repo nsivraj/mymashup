@@ -78,6 +78,11 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 //		{
 //			System.out.println("Found the culprit: "+MBCounselor.toString(canonicalData, parser.getToParse()));
 //		}
+		if("chadburn".equalsIgnoreCase(MBCounselor.getLastName(canonicalData)) && "cortney".equalsIgnoreCase(MBCounselor.getFirstName(canonicalData)))
+		{
+			System.out.println("Found chadburn");
+			System.out.flush();
+		}
 		
 		MBCounselor counselor = null;
 		
@@ -106,11 +111,11 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 				if(lastName != null)
 				{
 					lastName = lastName.toLowerCase().replace(" ", "");
-					if("vanwagoner".equalsIgnoreCase(lastName))
-					{
-						System.out.println("Found vanwagoner");
-						System.out.flush();
-					}
+					//if("chadburn".equalsIgnoreCase(lastName) && "cortney".equalsIgnoreCase(MBCounselor.getFirstName(canonicalData)))
+					//{
+					//	System.out.println("Found chadburn");
+					//	System.out.flush();
+					//}
 					List<MBCounselor> sameLastName = lastNameMap.get(lastName);
 					if(sameLastName != null)
 					{
@@ -160,16 +165,17 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 								nextMatch = tmpCounselor.matchesOtherAttributes(canonicalData, parser.getToParse(), parser.getDataOrigin(), false);
 								if(nextMatch > currentMatch && (nextMatch > 1 || (nextMatch >= 1 && MBCounselor.firstnamesMatch(tmpCounselor.getFirstName(), MBCounselor.getLastName(canonicalData)))))
 								{
-									
+									if(MBCounselor.firstnamesMatch(tmpCounselor.getFirstName(), MBCounselor.getLastName(canonicalData)))
+									{
+										nextMatch++;
+									}
+									if(MBCounselor.firstnamesMatch(tmpCounselor.getLastName(), MBCounselor.getFirstName(canonicalData)))
+									{
+										nextMatch++;
+									}
 									currentMatch = nextMatch;
 									counselor = tmpCounselor;
 									
-									// DONE: fix the lastNameMap based on the swapping that just occurred
-									// this may not really need to be done
-									//if(changed)
-									//{
-									//	counselorsToSwap.add(counselor);
-									//}
 								}
 							}
 							if(counselor != null)
@@ -178,9 +184,6 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 								boolean changed = MBCounselor.swapFirstNameAndLastName(canonicalData, parser.getToParse());
 							}
 							
-							// DONE: remove the counselors from the sameFirstName list and put them
-							// into their correct sameLastName list
-							//this may not really need to be done here
 						}
 					}
 				}
@@ -205,7 +208,10 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 				throw new RuntimeException("The registration number '" + regNumberKey + "' is already mapped to a counselor: " + counselor);
 			}
 			
-			regNumberMap.put(regNumberKey, counselor);
+			if(regNumberKey.trim().length() > 0)
+			{
+				regNumberMap.put(regNumberKey, counselor);
+			}
 		}
 		
 		// need to do checks on both because sometimes the first and last names are getting swapped, maybe NOT ???
@@ -245,6 +251,15 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 					sameLastNameCounselor = tmpCounselor;
 				}
 			}
+
+//Exception in thread "main" java.lang.RuntimeException: The counselor with last name 'chadburn' is already contained in the last name mapping:
+//CHADBURN :: CORTNEY :: 2302 N 800 W :: null :: PROVO :: UT :: 846041260 :: US :: 8013757587 :: 8013757587 ::  :: null :: null :: 
+//null :: null :: null ::  ::  :: yes :: 16 :: 
+///media/sda1/eclipse-jee-helios-win32/workspace/scouting/Counselor_Merit_Badges/DoubleknotExport.20101103.xls 
+//<-->
+//CHADBURN :: CORTNEY :: 2302 N 800 W ::  :: PROVO :: UT :: 846041260 :: US :: 8013757587 :: null ::  ::  ::  :: 
+//Grandview East ::  :: 119070424 :: 5/1/2007 ::  :: yes :: 21,16 ::
+///media/sda1/eclipse-jee-helios-win32/workspace/scouting/Counselor_Merit_Badges/Master-FortUtahDistrict-Marzo142011.txt
 			
 			// this should never happen, if it does then it means that the findCounselor method above failed, in most cases
 			String sameRegNumber = (sameLastNameCounselor == null ? null : sameLastNameCounselor.getRegistrationNumber());

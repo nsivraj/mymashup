@@ -35,7 +35,7 @@ from web site               |                 | FortUtah-MCR-09032010-BSA.xlsx |
 20 Badges_Taught_Starts_Here| Double Knot     |                                |                                       |                                        |                                   |                               | 3 Badge                       |                                              |                                                                                  |
 
 
-"Council Name"	"District Name"	"Prefix"	"First Name"	"Middle Name"	"Last Name"	"Suffix"	"Address 1"	"Address 2"	"Address 3"	"Address 4"	"Address 5"	"City"	"State"	"ZIP Code"	"Phone Type"	"Phone No"	"Phone Ext"	"Phone Type"	"Phone No"	"Phone Ext"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Badge"	"Troop Only"	"Effective Date"	"Expire Date"	"Person ID"
+"Council Name"  "District Name" "Prefix"        "First Name"    "Middle Name"   "Last Name"     "Suffix"        "Address 1"     "Address 2"     "Address 3"     "Address 4"     "Address 5"     "City"  "State" "ZIP Code"      "Phone Type"    "Phone No"      "Phone Ext"     "Phone Type"    "Phone No"      "Phone Ext"     "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Badge" "Troop Only"    "Effective Date"        "Expire Date"   "Person ID"
 
 
 PUT THE DATES FROM NATIONAL IN THE Note FIELD OF DOUBLE KNOT AND USE THE
@@ -241,3 +241,15 @@ because it leaves less room for error during the upload) -- so for this we will 
 which has the code for canonicalizing the name and then mapping the name to the number, it will contain a
 static HashMap that maps the canonicalized name to the number.
 3) Need to parse the each file of data from National
+
+
+Here is how you do a search and replace in "vi"
+---------------------------------------------------------------------------------------------------------
+:s/search_string/replacement_string/g
+:s/take a mile/measure it/
+:32,56s/guy/gal/g
+:1,$s/search_string/replacement_string/g
+:%s/search_string/replacement_string/g
+
+
+

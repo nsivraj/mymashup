@@ -44,11 +44,11 @@ public class NationalParser extends BaseMBParser
 						canonicalMBName = canonicalMBName.substring(0, canonicalMBName.length() - 4);
 					}
 					
-					if(MeritBadge.findByCanonicalName(canonicalMBName) == null && !"badge".equalsIgnoreCase(canonicalMBName))
+					if(MeritBadge.findByCanonicalName(canonicalMBName) == null && !"badge".equalsIgnoreCase(canonicalMBName) && !"mbcnslname".equalsIgnoreCase(canonicalMBName))
 					{
 						throw new RuntimeException("Cannot find merit badge with name '"+canonicalMBName+"'.");
 					}
-					else
+					else if(!"mbcnslname".equalsIgnoreCase(canonicalMBName))
 					{
 						//mbName.set(canonicalMBName);
 						values[i] = canonicalMBName;
@@ -57,6 +57,8 @@ public class NationalParser extends BaseMBParser
 				
 				//values[i] = mbName.get();
 			}
+			
+			values[i] = values[i].trim();
 		}
 		
 		return values;

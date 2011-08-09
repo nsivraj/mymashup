@@ -1,0 +1,37 @@
+Cross html canvas communication in the same page - allowing two different html canvases to communicate with each other
+
+Pulling via long polling (<script XHR) content cross domain where the domain is SLD (second level domain)
+
+Tomcat 7 (Servlet spec 3 with Request Continuation), Lift web framework, Scala, Comet, LiftSesson
+management, Apache mod_jk, all-to-all session cluster with cluster groups (different UDP ports) rather
+than primary/secondary, Scala Actors, HTML5, javascript, CSS3
+
+1) Download tomcat 7 and verify servlet spec 3 with request continuation
+2) Download Lift web framework and get it working in tomcat 7
+3) Verify request continuation works with Lift web framework and tomcat 7
+4) Implement a Comet sample app in Lift web framework that uses Actors and
+   verify that a request continuation happens correctly when there is a long
+   IO/Database operation (the long IO operation should not prevent a subsequent
+   HTTP Request coming from another browser from being fulfilled and when the
+   long IO operation completes it should correct load back to the waiting initial
+   browser client)
+5) Use LiftSession management and hook it into the HttpSession management
+   to use sticky sessions
+6) Download and intall Apache web server with mod_jk extension and configure
+   mod_jk to point at two tomcat 7 instances with the Lift web framework and
+   Comet sample app
+7) Setup all-to-all session cluster with a cluster group at the same UDP port
+   and a second cluster group at a different UDP port
+8) Verify that sticky sessions work with Lift session management
+9) Implement a custom session management scheme in Lift that is Work Session
+   centric where the session continues to be routed to the same sticky session
+   server until the Work Session (a Work Session's life span is less than a
+   session cookie based HTTPSession but at least longer than one HTTPRequest)
+   has been deemed to be completed by the application on the server and then
+   the next HTTPRequest from the client can be routed to any server in the
+   cluster. This is Work Session management and can be cookie based as well
+   and infact the Work Session management may use HTTPSession cookies to
+   implement a valid Work Session management scheme.
+10) Now implement an HTML5, javascript, CSS3 app in the browser
+
+560-D1A

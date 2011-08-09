@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,7 +89,7 @@ public abstract class BaseMBParser implements MBParser
 	
 	
 	
-	public void merge(CanonicalData canonicalData, boolean hasFirstRow) throws IOException
+	public void merge(CanonicalData canonicalData, boolean hasFirstRow) throws IOException, ParseException
 	{
 		if(toParse.exists())
 		{
@@ -105,7 +106,7 @@ public abstract class BaseMBParser implements MBParser
 				String[] mbData = parseNextLine(reader, nextLine);
 				if(mbData != null)
 				{
-					mbData = canonicalizer.getCanonicalData(dataOrigin, mbData, mapping);
+					mbData = canonicalizer.getCanonicalData(toParse, dataOrigin, mbData, mapping);
 					// fix the last name if it has the |||| set of characters in it
 					String lastNameSuffix = MBCounselor.getLastName(mbData);
 					if(lastNameSuffix != null)
@@ -121,9 +122,15 @@ public abstract class BaseMBParser implements MBParser
 							lastNameSuffix = null;
 						}
 					}
-					if("GRIFFIN".equalsIgnoreCase(mbData[0]))
+					
+					if("chadburn".equalsIgnoreCase(mbData[1]))
 					{
-						//System.out.println("Found GRIFFIN");
+						System.out.println("Found chadburn");
+					}
+					if("chadburn".equalsIgnoreCase(MBCounselor.getLastName(mbData)) || "chadburn".equalsIgnoreCase(MBCounselor.getFirstName(mbData)))
+					{
+						System.out.println("Found chadburn");
+						System.out.flush();
 					}
 					
 					MBCounselor counselor = canonicalData.findCounselor(mbData, this);

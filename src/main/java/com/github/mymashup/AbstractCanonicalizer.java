@@ -1,6 +1,9 @@
 package com.github.mymashup;
 
 import java.io.File;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,21 +79,48 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		return mb == null ? null : String.valueOf(mb.getNumber());
 	}
 
-	public String[] getCanonicalData(String dataOrigin, String[] mbData, String[] mapping)
+	public boolean isYouth(String youth)
+	{
+		return youth.equalsIgnoreCase("Y");
+	}
+	
+	public String[] getCanonicalData(File mostRecentDataFile, String dataOrigin, String[] mbData, String[] mapping) throws ParseException
 	{
 		String[] canonicalData = new String[ImportField.getFieldCount()];
 		
-		// the length and order of mbData is different than the length and order or canonicalData
+		// the length and order of mbData is different than the length and order of canonicalData
 		for(int i = 0; i < mbData.length; ++i)
 		{
-			ImportField field = ImportField.findByName(mapping[i]);
-			if(field != null/* && (dataOrigin.equals(field.getOwner()) || "canonical".equalsIgnoreCase(dataOrigin))*/)
+			if("youth".equalsIgnoreCase(mapping[i]) && isYouth(mbData[i]))
 			{
-				canonicalData[field.getIndex()] = getCanonicalData(canonicalData[field.getIndex()], mbData[i], field);
+				System.out.println("Found a youth " + mbData[i] + " so not importing data... " + MBCounselor.toString(mbData, mostRecentDataFile));
+				return null;
 			}
+			
+			String[] parts = {mapping[i]};
+			if(mapping[i].indexOf("||") != -1)
+			{
+				//System.out.println("Found an || mapping...");
+				parts = mapping[i].split("\\|\\|");
+			}
+			
+			for(String part:parts)
+			{
+				//System.out.println("Checking part: " + part);
+				ImportField field = ImportField.findByName(part);
+				if(field != null/* && (dataOrigin.equals(field.getOwner()) || "canonical".equalsIgnoreCase(dataOrigin))*/)
+				{
+					canonicalData[field.getIndex()] = getCanonicalData(canonicalData[field.getIndex()], mbData[i], field);
+					if(canonicalData[field.getIndex()] != null && canonicalData[field.getIndex()].trim().length() > 0)
+					{
+						break;
+					}
+				}
+			}
+
 		}
 
-		// the length and order of mbData is different than the length and order or canonicalData
+		// the length and order of mbData is different than the length and order of canonicalData
 		for(int i = 0; i < canonicalData.length; ++i)
 		{
 			if(canonicalData[i] == null)
@@ -102,7 +132,7 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		return canonicalData;
 	}
 	
-	public String getCanonicalData(String currentCanonicalData, String data, ImportField field)
+	public String getCanonicalData(String currentCanonicalData, String data, ImportField field) throws ParseException
 	{
 		if(data == null) return data;
 		
@@ -126,6 +156,10 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 					String origCanonicalData = canonicalData;
 					canonicalData = origCanonicalData.substring(0, origCanonicalData.length() - 3);
 					canonicalData += MBCounselor.LASTNAME_SUFFIX_INDICATOR+origCanonicalData.substring(origCanonicalData.length() - 3).trim();
+				}
+				if("First_Name".equals(field.getName()) && currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null)
+				{
+					canonicalData = currentCanonicalData + " " + canonicalData;
 				}
 			}
 			else if(STATE_OPTION.equals(field.getType()))
@@ -169,6 +203,11 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				{
 					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' is not all numbers: " + canonicalData + " :: " + data);
 				}
+				
+				if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null)
+				{
+					canonicalData = currentCanonicalData + canonicalData;
+				}
 			}
 			else if(UNIT_OPTION.equals(field.getType()))
 			{
@@ -176,6 +215,11 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				if(canonicalData == null)
 				{
 					canonicalData = field.getDefaultValue();
+				}
+
+				if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null && currentCanonicalData.indexOf(canonicalData) == -1)
+				{
+					canonicalData = currentCanonicalData + " -- " + canonicalData;
 				}
 	
 				//if(canonicalData == null || canonicalData.length() <= 0)
@@ -185,11 +229,25 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			}
 			else if(DATE.equals(field.getType()))
 			{
-				canonicalData = canonicalData.replace("/", "");
-				if(!isAllNumbers(canonicalData))
+				String dateNums = canonicalData.replace("/", "");
+				if(!isAllNumbers(dateNums))
 				{
-					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' is not all numbers: " + canonicalData + " :: " + data);
+					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' is not all numbers: " + dateNums + " :: " + data);
 				}
+				
+				if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null && currentCanonicalData.indexOf(canonicalData) == -1)
+				{
+					//canonicalData = currentCanonicalData + " -- " + canonicalData;
+					//set canonicalData to the more recent of currentCanonicalData and canonicalData by doing date compare - MM/dd/yy
+					SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
+					Date canonicalDate = format.parse(canonicalData);
+					Date currentCanonicalDate = format.parse(currentCanonicalData);
+					if(currentCanonicalDate.getTime() > canonicalDate.getTime())
+					{
+						canonicalData = currentCanonicalData;
+					}
+				}
+				
 			}
 			else if(ACTIVE_OPTION.equals(field.getType()))
 			{
@@ -308,13 +366,13 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				
 				if(mbVals[i].length() > 0)
 				{
-					if(MeritBadge.prepareForImport)
+					if(MeritBadge.showMBNames)
+					{
+						displayVal += MeritBadge.findByNumber(Integer.parseInt(mbVals[i])).getDisplayName() + "\t";
+					}
+					else if(MeritBadge.prepareForImport)
 					{
 						displayVal += mbVals[i] + "\t";
-					}
-					else if(MeritBadge.showMBNames)
-					{
-						displayVal += MeritBadge.findByNumber(Integer.parseInt(mbVals[i])).getDisplayName() + ",";
 					}
 					else
 					{

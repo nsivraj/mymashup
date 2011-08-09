@@ -1,0 +1,1052 @@
+<!--
+   Copyright 2009-2010 Mark Hatton
+   http://purplefloyd.wordpress.com
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Fred Jones in Adventureland</title>
+<!--[if IE]><script type="text/javascript" src="excanvas_r3/excanvas.js"></script><![endif]-->
+<meta http-equiv="X-UA-Compatible" content="chrome=1"> <!-- use Google Chrome Frame IE plug-in if available -->
+</head>
+
+<script type="text/javascript">
+
+// images
+var imgPlayer;
+var imgTiles;
+var imgEnemy = new Array(5);
+var imgSky = new Array(3);
+var imgFont;
+var loaded = false;
+
+// constants
+var ResolutionX = 640, ResolutionY = 480;
+var NumTextures = 35;
+
+// Map variables
+var CurrentLevel = 0;
+var mapWidth = new Array(6);
+var mapHeight = new Array(6);
+var mapGravity = new Array(6);
+var mapSky = new Array(6);
+var mapName = new Array(6);
+var mapFile = new Array(6);
+var ScrollX = 0, ScrollY = 0;
+var MapWidth = 0, CoinCount = 0, Gravity = 0.0, SkyTexture = 0, MapName = "";
+var endLevelCounter = 0;
+var endLevelData = 0;
+var specialGametickFunction = null;
+var mapNameDisplayCounter = 0;
+
+// Enemy state
+var EnemyX = new Array(100), EnemyY = new Array(100), EnemyType = new Array(100), EnemyAwake = new Array(100), EnemyCount = 0, EnemyFrame = new Array(100), EnemyMove = new Array(15), EnemyDead = new Array(100), EnemyData = new Array(100), EnemyBulletX = new Array(100), EnemyBulletY = new Array(100), EnemyBulletM = new Array(100), EnemyBullet = new Array(100), EnemyXForce = new Array(100), EnemyYForce = new Array(100), EnemyGroupBelong = new Array(100);
+var EnemyGroup = new Array(20);
+for (var i = 0; i < EnemyGroup.length; i++)
+	EnemyGroup[i] = new Array(10);
+EnemyMove[0] = 1;
+EnemyMove[1] = 2;
+EnemyMove[2] = 0;
+EnemyMove[3] = 0;
+EnemyMove[4] = 0;
+
+// Variables for special blocks
+var CoinCollect = 0, ExitX = 0, ExitY = 0;
+
+// Rocket variables
+var DoorTop = 0;
+var RocketTop = 0;
+var RocketForce = 0;
+var RocketFrame = 0;
+
+var MapData = new Array(512);
+for (var i = 0; i < MapData.length; i++)
+	MapData[i] = new Array(16);
+var LookUp32 = new Array(512);
+
+var StartingLevel = 0;
+
+// player state
+var PlayerX = 0;
+var PlayerY = 0;
+var XForce = 0;
+var YForce = 0;
+var PlayerFrame = 0;
+var PlayerOrientation = 1;
+
+// Misc. player state
+var PlayerPause = 0, PlayerJumpHold = 0;
+var StartPlayerX = 0, StartPlayerY = 0, StartScrollX = 0, StartScrollY = 0;
+var KillPlayer = 0, PlayerNeedJump = 0, AllowJump = 0;
+var MaxSpeed = 9;
+
+// key states
+var key_jump = false;
+var key_left = false;
+var key_right = false;
+
+///////////////////////////////////////////////////////////////////////////////
+// MAPS ///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+mapWidth[0] = 199;
+mapHeight[0] = 15;
+mapGravity[0] = 0;
+mapSky[0] = 0;
+mapName[0] = 'Welcome to Adventureland';
+mapFile[0] =
+'KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK                                                                                    \
+KNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN KLLLLLK                    AA  AA                                                           \
+KNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN  AA  NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN  KLLLK      A A A                                                                           \
+K N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N       N N N N N N N N N N N N N N N N N N N    KLK                    5        5                                                         \
+K                                                                                                             K         KKKKKKKIIIIIIIIIIIIIIIIIIIIII   JJJJJJJJJJ                                L L L\
+K                                                      AA                                                     A        KLLLLLLLKILLLLLLLLLLLLLLLLLLLI   JMMMMMMMMJ                                LLLLL\
+K                                                              JJ                                             A       KLLLLLLLLLKIIIIIIIIIIIIIIIIIILI   JMMMMMMMMJ                                LLLLL\
+K                                                                                                             A      KKKKKKKKKKKKK                ILI   JMMMMMMMMJ                                LLLLL\
+K                                          AA                IIIIII                                                                               ILI   JMMMMMMMMJ                                LLLLL\
+K         A                            A        A   KKKKKKKK   II   KKKK                          A      KKKK   KKKK                           B  ILI   JMMMMMMMMJ                  A             LLLLL\
+K                                           5          KK      II    KK                                 KLLK     KLLK                        A   AILI   JMMMMMMMMJ                                LLLLL\
+K         I                          IIIIIIIIIIIIII    KK      II    KK KKKK              KKKKKK       KLLLK     KLLLK                        A A ILI   JMMMMMMMMJ             A   LLL   A        YLLLL\
+K1      JIIIJ  5         K  5  K           II          KK      II    KK  KK                 KK     5  KLLLLK     KLLLLK           5  5         A  ILI   JMMMMMMMMJ                5 5 5           ELLLL\
+KJJJJJJJJIIIJJJJJJJ   IIIIIIIIIIIIII       II          KK      II    KK  KK KKKK     KKKK   KK  LLLLLLKLLLLK     KLLLLK  LLL    LLLLLLLL    LLLLLLILI   JMMMMMMMMJ   LLLLLLLLL   LLLLLLL   LLLLLLLLLLLL\
+KJJJJJJJJIIIJJJJJJJ   KKKKKKKKKKKKKK       II          KK      II    KK  KK  KK KKKK  KK    KK  KKKKKKKKKKK       KKKKK  KKK    KKKKKKKK    KKKKKKILI   JMMMMMMMMJ   KKKKKKKKK   KKKKKKK   KKKKKKKKKKKK';
+
+mapWidth[1] = 136;
+mapHeight[1] = 15;
+mapGravity[1] = 0;
+mapSky[1] = 2;
+mapName[1] = 'Blast Off';
+mapFile[1] =
+'                                                               F                     aaPaa    F    F      F       P   F FF FF F        a\
+                                                               F        AA             Q      F AA F      F       Q   F FF FF F        a\
+                                                               F       A  A            P     SSSSSSSS     F       P   U UU UU U        a\
+                                                               F                       Q      F    P      F       Q   U U U  U U       a\
+                                                               FQPQPQPQPQPQPQPQPQPQ    P AA   F    Q      F    A  P   UUUUUUUUUU       a\
+                                                               FPS S S S S S S S SP7777QRRRRR F    P      F   A A Q   U U U UU U       a\
+                             A     A     A                     FQ S S S S S S S S Q    P      F    Q      F       P   U U UUUU U       a\
+                                                   b    b      FPS S S S S S S S SP    Q      F    P    RRRRR77777Q                    a\
+                    A        5           5         D AA D      8Q S S S S S S S S Q    P      F    Q              F                   ba\
+                  QRRRQ   QSSSSSQ77777QSSSSSQRRRRRRcRRRRcRRRRRRRPRRRRRRRRRRRRRRRRRP    Q      F    P              F             A A A Da\
+             A    F   F   F     F     F     F   QQ   QQ   QQ    Q                      P      F    Q              F             KKKRRRca\
+           QRRRQ  F   F   F     F     F     F   PP   PP   PP    P                             F    P              F            KKKKK   a\
+      1    F   F  F   F   F     F     F     F   OORRROORRROO    Q  A           A              F    Q            A F           KKKKKK   a\
+    QRRRQ  F   F  F   F   F     F     F     F   QQ   QQ   QQ    P A A 5  5  5 A A             8    P            A F       5 KKKKKKKK   a\
+    F   F  F   F  F   F   F     F     F     F   PP   PP   PP    QRRRRRRRRRRRRRRRRRRRRRRRRR   RRR   Q            A F  RRRRRRRRRRRRRRRRRRR';
+
+mapWidth[2] = 255;
+mapHeight[2] = 15;
+mapGravity[2] = -0.7;
+mapSky[2] = 1;
+mapName[2] = 'The Moon Base';
+mapFile[2] =
+'NaSSSSSSSSST                                                                                                           A A                          B  Q T     QQQQQQQQ        QQQQQQQQ     T    QSQSQSQSQSQSQSQSQSQSQSQSQ                                    B\
+N          T                                                         A                                                                                 Q F                     QQQQQQ       F        A          A        S               AA                    \
+Nb         T B A A A              5   5                    5    5          A                    A  A      A  A               QSQSQSQSQSQ   SS  SS  SS  Q F SSSSSSSSSSSS        QQQQ         F       A A        A A       Q                     77777777        \
+ND 1       T    A A            TTTTTTTTTTT   RRRR   TTTTTTTTTTTTTTTTTT           A                                    SSSSS            Q               Q F Q         QQ        QQ           F        5          5        S        AA    TSST                   \
+NcRRR   RRRTTTTTTTTTTTTTTTTT               A                         T777                         5         5                          Q     5   5   5 Q F Q            6 6 6 6             F    RRRRRRRR   RRRRRRRR     Q                                     \
+N            A         A  TTT                                        T      777         777   NNNNNNN  NNNNNNNNN    NNNNNNNNN          Q   QSQSQSQSQSQSQ F Q         QQRRRRRRRRQQ           F                            S AA    TSST    AA                    \
+N     A                   TTTT  A  A  A                              T            777           F F       F F   a      F F             Q               Q F Q       QQQQ        QQQQ         F                            Q                                     \
+N            A              TTTTTTTTTTTTTT   RRRR   TTTTTTTTTTT   TTTT                          F F       F F    a     FBF             Q               Q F       QQQQQQ        QQQQQQ       F                            STSST   AA     TSST                  N\
+N     A     NNN       NNN                                        TT  T                          F F       F F     a   AFAFA            Q 5   5   5     Q F     QQQQQQQQ        QQQQQQQQ     F                            Q                                   NN\
+N         NNN       NNN          A               A              TT   T                          F F       F F      a A F F A           QSQSQSQSQSQSQ     F   QQQQQQQQQQ        QQQQQQQQQQ   F                                   TSST              AA        NNN\
+N     5 NNN  A A  NNN                      A               6   TT    T                          F F       F F       aaaFaFaaa          Q           S     8                                  8                             6                        5        CNN\
+NNNNNNNNNNNNNNNNNNNN                               TTTTTTTTTTTTT     T                          F F       F F          F F             RRRRRRRRRRRRRRRRRRRRRR                            TSSSSST                       TTTTTTTTTT                TTTT    TTTTTT\
+UUUUUUUUUUUUUUUUNN   AA         OOO          OOO    T        T       T                          F F       F F          F F                                                                                                                                     \
+UUUUUUUUUUUUUUNN  OOOOOOOOO   OOOOOOO  OOO    O     T        T       T                          F F       F F          F F                                                                                                                                     \
+UUUUUUUUUUUUNN        O          O      O     O     T        T       T                          F F       F F          F F                                                                                                                                     ';
+
+mapWidth[3] = 154;
+mapHeight[3] = 15;
+mapGravity[3] = -0.7;
+mapSky[3] = 1;
+mapName[3] = 'Luna Heights';
+mapFile[3] =
+'Q   Q                                               NS S S S N        T Q Q Q T                           N S S SN S S SN S S SN S S SN S S SN           K\
+Q 1 Q                      A                        N S S S SN        TQ Q Q QT                           NS S S NS S S NS S S NS S S NS S S N           N\
+Q 7 Q                     A A                       NS S S S N        T Q Q Q T                           N S S SN S S SN S S SN S S SN S S SN           N\
+Q   Q                    A 6 A                       NNNNNNNN         TQ Q Q QT  B                        NS S S NS S S NS S S NS S S NS S S N           N\
+Q   Q                   TSTSTST        RRRRRR         F AA F          T Q Q Q T TST    T                  N S S SN S S SN S S SN S S SN S S SN           N\
+Q             TST       ST   TS             S         FA  AF          TQ Q Q QT        8                  NS S S NS S S NS S S NS S S NS S S N           N\
+Q                        S   S              T       NNNNNNNNNN        T Q Q Q T        F                  N S S SN S S SN S S SN S S SN S S SN           N\
+Q                                           S       NS S S S N        TQ Q Q QT        F                  NS S S NS S S NNNNNNNNNNNNNNNNNNNNNN           N\
+Q                                           T       N S S S SN         TTTTTTT         F                   NS S SNNNNNNNN                   6           bN\
+Q   TSTST99999TST9999999TSTSTST9999999TSTSTST      RNS S S S N          F   F          F                    NNNNNN         NNNNNNNNNNNNNNNNNN          6DN\
+Q        TSTST   TSTSTST       TSTSTSTA B A         N S S S SN          F 3 F          F                            NNNNNNNN                RRRRRRRRRRRRcN\
+Q                                    A A A A        NS S S S N        TTTTTTTTT        F     7777777777   NNNNNNNNNNN   N                                N\
+Q                                 aaaaaaaaaaa       N S S S SN        TQ Q Q QT        F                  N      N      N                                N\
+Q                                                   NS S S S N       RT Q Q Q TR       F                  N      N      N                                N\
+Q                                                   N S S S SN        TQ Q Q QT                           N      N      N                                N';
+
+mapWidth[4] = 150;
+mapHeight[4] = 15;
+mapGravity[4] = 0;
+mapSky[4] = 2;
+mapName[4] = 'Finale';
+mapFile[4] =
+'K1  KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\
+K   LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLA A5A A A5A A       KA           A   A   A   A   A F                555555555555555555555555555555555555555    \
+K       5 KKK  5 KKKKKK    LLLLLLLLLLLLLLLLLLLLLLLLLLLLL   KA             A   A   A   A   F                                                           \
+K          K      KKKK      LLLL                          KKKKKKKK    MMMMMMMMMMMMMMMMMMM F                                                           \
+K                  KKaa  a   LLS                         KKKA A A                M6   M6  F                                                           \
+K          A      A      aa  LSS   LLLLLLLLLLLLL   KKKKKKKKK A A   K           A MM6   M  F         J      IIIII IaaI IIIIaaIIII IaaI III   I I I     \
+KK          A    A KK   a5   SSS             LLL           KA A A        A       M M6     F         JJ       I   I  I I     I    II I I  I  I I I     \
+KKK        K A  A KKKKaa5a  aLSS     6       LLL           KKA A   KKKK KKK     KM  M6    F   JJJJJJJJJ      I   IIII III   III  I II I  I  I I I     \
+KKKK      KKK    KKKKKKaaa   LLSLLLLLLLLLL   LLL           KKKA A  K        K    M6  M6   F         JJ       I   I  I I     I    I  I I  I            \
+LLLLLLLLLLLLLLLLLLLLLLLLLLL  LLL             LLL           KKKKKKKKK A A A     KKMM6  M6  F         J        I   I  I IIII  IIII I  I III   I I I     \
+a                            LLL   aaaa     aLLL                   K             M M6  M  F                                                           \
+a   LLLLLLLLLLLLLLLLLLLLLLLLLL    a  5 a   aaLLL  KKKKKKKK         KKKKKKKK   KKKM  M6    F                                                           \
+a       A A A A                    aaaa   aaaLLL  KA A A            5  6         M   M6   F                                                           \
+a                                  aaaa  aaaaLLL  KKKKKKKKKKKKKKKKKKKKKKKKKKK   KMMMMMM   RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaLLL  KKKKKKKKKKKKKKKKKKKKKKKKKKK   KKKKKKK                                                               '
+
+
+///////////////////////////////////////////////////////////////////////////////
+// INIT ///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+if (!document.addEventListener && document.attachEvent)
+{
+	// IE
+	document.attachEvent('onkeydown', handleKeyDown)
+	document.attachEvent('onkeypress', handleKeyPress)
+	document.attachEvent('onkeyup', handleKeyUp)
+} else {
+	window.addEventListener('keydown', handleKeyDown, true)
+	window.addEventListener('keypress', handleKeyPress, true)
+	window.addEventListener('keyup', handleKeyUp, true)
+}
+
+var imagesLoaded = 0;
+var imagesToPreload = 11;
+function preinit()
+{
+	loading();
+
+	imgPlayer = preload_image('player.png');
+	imgTiles = preload_image('tiles.png');
+	imgEnemy[0] = preload_image('enemy0.png');
+	imgEnemy[1] = preload_image('enemy1.png');
+	imgEnemy[2] = preload_image('platform0.png');
+	imgEnemy[3] = preload_image('platform1.png');
+	imgEnemy[4] = preload_image('spikes.png');
+	imgFont = preload_image('font.png');
+	imgSky[0] = preload_image('sky1.png');
+	imgSky[1] = preload_image('sky2.png');
+	imgSky[2] = preload_image('sky3.png');
+}
+
+function preload_image(uri)
+{
+	var img = new Image();
+	img.onload = on_image_load_event;
+	img.onerror = on_image_load_event;
+	img.onabort = on_image_load_event;
+	img.src = uri;
+	return img;
+}
+
+function on_image_load_event()
+{
+	imagesLoaded++;
+	if (imagesLoaded >= imagesToPreload)
+		init();
+}
+
+function init()
+{
+	loaded = true;
+	loadMap(CurrentLevel);
+	setInterval(clocktick, 40);	// go
+}
+
+var loadingStatus = 0;
+function loading()
+{
+	var ctx = document.getElementById('canvas').getContext('2d');
+
+	if (loaded || !ctx.font || !ctx.measureText || !ctx.fillText) return;
+
+	ctx.save();
+	ctx.clearRect(0,0,ResolutionX,ResolutionY);
+	ctx.fillStyle = "White";
+	if (navigator.userAgent.indexOf('MSIE') == -1)
+		ctx.font = "18pt Arial";
+	else
+		// excanvas font craziness?!
+		ctx.font = "18 Arial";
+
+	var loadingText = "Loading";
+	for (var i = 0; i < loadingStatus; i++)
+		loadingText += ".";
+
+	loadingStatus++;
+	loadingStatus %= 3;
+
+	var textMetrics;
+	textMetrics = ctx.measureText("Loading...");
+	if (textMetrics)
+		ctx.fillText(loadingText, (ResolutionX - textMetrics.width) / 2, ResolutionY / 2);
+	ctx.restore();
+
+	setTimeout(loading, 200);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// GAME TICK //////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+function clocktick()
+{
+	if (specialGametickFunction)
+		specialGametickFunction();
+	else
+		gametick();
+}
+
+function gametick()
+{
+	AllowJump = 0
+
+	draw();
+	if (mapNameDisplayCounter < 100)
+	{
+		fontPrint(mapName[CurrentLevel], -1, -1);
+		mapNameDisplayCounter++;
+	}
+
+	if (KillPlayer == 1)
+	{
+		KillPlayer = 0;
+		YForce = -18;
+		specialGametickFunction = killAnimGametick;
+	}
+
+	PLeft = Math.floor((PlayerX + 1) / 32);
+	PTop = Math.floor((PlayerY) / 32);
+	PWidth = Math.floor((PlayerX - 1) / 32) + 1;
+	PHeight = Math.floor((PlayerY) / 32) + 1;
+
+	// Jumping
+	if (key_jump && PlayerJumpHold == 0 && PlayerY > 0 && MapData[PLeft][PHeight] > 7 || key_jump && PlayerJumpHold == 0 && MapData[PWidth][PHeight] > 7 && PlayerY > 0 || AllowJump == 1 && key_jump && PlayerJumpHold == 0)
+		PlayerJumpHold = 1;
+	if (key_jump && PlayerJumpHold > 0 && PlayerJumpHold < 5)
+	{
+		YForce -= 6;
+		PlayerJumpHold++;
+	}
+	if (!key_jump || PlayerJumpHold >= 5)
+		PlayerJumpHold = 0;
+
+	if (PlayerY > 0 && PlayerY < 512)
+	{
+		// Coin Collecting
+		var coinCollected = false;
+		if (MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32) + 1] == 0)
+			{ MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32) + 1] = -1; coinCollected = true; }
+		if (MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32) + 1] == 0)
+			{ MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32) + 1] = -1; coinCollected = true; }
+		if (MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32)] == 0)
+			{ MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32)] = -1; coinCollected = true; }
+		if (MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32)] == 0)
+			{ MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32)] = -1; coinCollected = true; }
+		if (coinCollected)
+		{
+			CoinCount = CoinCount - 1;
+			CoinCollect = CoinCollect + 1;
+		}
+
+		// Extra Life Collecting
+		if (MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32) + 1] == 1)
+			{ MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32) + 1] = -1; }
+		if (MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32) + 1] == 1)
+			{ MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32) + 1] = -1; }
+		if (MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32)] == 1)
+			{ MapData[Math.floor(PlayerX / 32) + 1][Math.floor(PlayerY / 32)] = -1; }
+		if (MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32)] == 1)
+			{ MapData[Math.floor(PlayerX / 32)][Math.floor(PlayerY / 32)] = -1; }
+	}
+
+	// Set the Maximum Jump force and Terminal Velocity of player
+	if (YForce < -18)
+		YForce = -18;
+	if (YForce > 30)
+		YForce = 30;
+
+	// If the Player moves left/right change the XForces
+	if (key_left)
+	{
+		XForce--;
+		PlayerOrientation = -1;
+	}
+	if (key_right)
+	{
+		XForce++;
+		PlayerOrientation = 1;
+	}
+
+	// If the Player isn't moving left/right then slow him down
+	if (!key_left && !key_right)
+	{
+		if (XForce > 0)
+			XForce -= 0.5;
+		if (XForce < 0)
+			XForce += 0.5;
+	}
+
+	// Gravity (Move the player down)
+	YForce = YForce + 2 + Gravity;
+
+	// Limit the Player's X-Speed
+	if (XForce > MaxSpeed)
+		XForce = MaxSpeed;
+	if (XForce < -MaxSpeed)
+		XForce = -MaxSpeed;
+
+	// Move the player up/down
+	PlayerY += YForce;
+
+	// Scroll horizontally if required
+	if (PlayerX + ScrollX > ResolutionX / 2 && XForce > 0)
+		ScrollX -= Math.floor(XForce);
+	if (PlayerX + ScrollX < ResolutionX / 2 && XForce < 0)
+		ScrollX -= Math.floor(XForce);
+	if (ScrollX > 0)
+		ScrollX = 0;
+	if (ScrollX - ResolutionX < -MapWidth * 32)
+		ScrollX = (-MapWidth * 32) + ResolutionX;
+
+	// Check for falling off the screen)
+	if (PlayerY + 32 > 480) // Where 480 is the height of the map
+	{
+		KillPlayer = 0;
+		specialGametickFunction = killAnimGametick;
+	}
+
+	PLeft = Math.floor((PlayerX + 1) / 32);
+	PTop = Math.floor((PlayerY) / 32);
+	PWidth = Math.floor((PlayerX - 1) / 32) + 1;
+	PHeight = Math.floor((PlayerY) / 32) + 1;
+
+	if (PHeight >= 0 && PlayerY < 512)
+	{
+		// Y-Collision Detection
+		if (MapData[PLeft][PTop] > 7 || MapData[PWidth][PTop] > 7)
+		{
+			PlayerY = (PTop + 1) * 32;
+			YForce = 0;
+		}
+		if (MapData[PLeft][PHeight] > 7 || MapData[PWidth][PHeight] > 7)
+		{
+			PlayerY = (PHeight - 1) * 32;
+			YForce = 0;
+		}
+	}
+
+	// Move the player left/right
+	PlayerX += XForce;
+	if (PlayerX < 0)
+	{
+		PlayerX = 0;
+		XForce = -XForce;
+	}
+	if (PlayerX + 32 > MapWidth * 32)
+	{
+		PlayerX = (MapWidth * 32) - 32;
+		XForce = -XForce;
+	}
+
+	if (PlayerY > 0 && PlayerY < 512)
+	{
+		PLeft = Math.floor((PlayerX + 1) / 32);
+		PTop = Math.floor((PlayerY) / 32);
+		PWidth = Math.floor((PlayerX - 1) / 32) + 1;
+		PHeight = Math.floor((PlayerY) / 32) + 1;
+
+		// X-Collision Detection
+		if (MapData[PLeft][Math.floor((PlayerY + 1) / 32)] > 7)
+		{
+			PlayerX = (PLeft + 1) * 32 + 1;
+			XForce = 0;
+		}
+		if (MapData[PWidth][Math.floor((PlayerY + 1) / 32)] > 7)
+		{
+			PlayerX = (PLeft) * 32 - 2;
+			XForce = 0;
+		}
+
+		// If the Player walks into an Exit
+		var doEndLevel = 0;
+		if (MapData[PLeft][Math.floor((PlayerY + 1) / 32)] == 2)
+			doEndLevel = 3;
+		if (MapData[PWidth][Math.floor((PlayerY + 1) / 32)] == 2)
+			doEndLevel = 3;
+		if (MapData[PLeft][Math.floor((PlayerY + 1) / 32)] == 4)
+			doEndLevel = 5;
+		if (MapData[PWidth][Math.floor((PlayerY + 1) / 32)] == 4)
+			doEndLevel = 5;
+		if (doEndLevel > 0)
+		{
+			specialGametickFunction = endLevelGametick;
+			endLevelData = doEndLevel;
+		}
+
+		// If the Player walks into the Rocket Ship
+		if ((MapData[PLeft][Math.floor((PlayerY + 1) / 32)] == 3 && (PLeft == ExitX || PWidth == ExitX)) ||
+			(MapData[PWidth][Math.floor((PlayerY + 1) / 32)] == 3 && (PLeft == ExitX || PWidth == ExitX)))
+		{
+			endLevelData = 0;
+			specialGametickFunction = rocketEndGametick;
+		}
+	}
+}
+
+function endLevelGametick()
+{
+	endLevelCounter++;
+	if (endLevelCounter >= 32)
+	{
+		endLevelCounter = 0;
+		specialGametickFunction = null;
+		loadMap(++CurrentLevel);
+		return;
+	}
+
+	PlayerX += 3
+
+	draw();
+
+	var ctx = document.getElementById('canvas').getContext('2d');
+	ctx.save();
+
+	ctx.drawImage(imgTiles, MapData[ExitX][ExitY] * 32 + 18 + endLevelData, 0, 32 - (18 + endLevelData), 32, ExitX * 32 + ScrollX + 18 + endLevelData, ExitY * 32, 32 - (18 + endLevelData), 32);
+	ctx.drawImage(imgTiles, MapData[ExitX + 1][ExitY] * 32, 0, 32, 32, (ExitX + 1) * 32 + ScrollX, ExitY * 32, 32, 32);
+	ctx.drawImage(imgTiles, MapData[ExitX + 2][ExitY] * 32, 0, 32, 32, (ExitX + 2) * 32 + ScrollX, ExitY * 32, 32, 32);
+
+	ctx.restore();
+}
+
+function rocketEndGametick()
+{
+	var ctx = document.getElementById('canvas').getContext('2d');
+	ctx.save();
+
+	// Draw the Player entering the rocket
+	switch (endLevelData)
+	{
+	case 0:
+		PlayerX++;
+		draw();
+		endLevelCounter++;
+		if (PlayerX >= (ExitX * 32))
+		{
+			DoorTop = (ExitY + 1) * 32;
+			XForce = 0;
+			endLevelCounter = 0;
+			endLevelData++;
+		}
+		break;
+	case 1:
+		// Draw the door closing
+		DoorTop--;
+		draw();
+		endLevelCounter++;
+		ctx.drawImage(imgTiles, 31 * 32, 0, 32, 32, (ExitX * 32) + ScrollX, DoorTop, 32, endLevelCounter);
+		if (endLevelCounter >= 32)
+		{
+			RocketTop = (ExitY - 1) * 32;
+			RocketForce = 0;
+			RocketFrame = 0;
+
+			// hide the map rocket, now we draw our own
+			MapData[ExitX][ExitY - 1] = -1;
+			MapData[ExitX][ExitY] = -1;
+			MapData[ExitX][ExitY + 1] = -1;
+
+			endLevelCounter = 0;
+			endLevelData++;
+		}
+		break;
+	case 2:
+		// Fly the Rocket Up
+		RocketForce += (Math.random() * 0.5);
+		RocketTop -= RocketForce;
+		PlayerY = RocketTop + 32;
+
+		draw();
+
+		RocketFrame = (++RocketFrame) % 2;
+
+		// Draw the Rocket
+		ctx.drawImage(imgTiles, 27 * 32, 0, 32, 32, (ExitX * 32) + ScrollX, RocketTop, 32, 32);
+		ctx.drawImage(imgTiles, 3 * 32, 0, 32, 32, (ExitX * 32) + ScrollX, RocketTop + 32, 32, 32);
+		ctx.drawImage(imgTiles, (29 + RocketFrame) * 32, 0, 32, 32, (ExitX * 32) + ScrollX, RocketTop + 64, 32, 32);
+
+		// Draw the player (inside the rocket)
+		ctx.drawImage(imgPlayer, PlayerFrame * 32 + (PlayerOrientation < 0 ? 96 : 0), 0, 32, 32, PlayerX + ScrollX, PlayerY, 32, 32);
+
+		// Draw the rocket door
+		ctx.drawImage(imgTiles, 31 * 32, 0, 32, 32, (ExitX * 32) + ScrollX, RocketTop + 32, 32, 32);
+
+		if (RocketTop < -96 * 4)
+		{
+			endLevelCounter = 0;
+			specialGametickFunction = null;
+			loadMap(++CurrentLevel);
+			return;
+		}
+		break;
+	}
+
+	ctx.restore();
+}
+
+function killAnimGametick()
+{
+	draw();
+
+	YForce += 2 + Gravity;
+
+	PlayerY = PlayerY + YForce;
+	PlayerX = PlayerX + XForce;
+
+	if (PlayerY > ResolutionY + 128)
+	{
+		KillPlayer = 0;
+		YForce = 0;
+		XForce = 0;
+		specialGametickFunction = null;
+		loadMap(CurrentLevel);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DRAW ///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+function draw()
+{
+	var ctx = document.getElementById('canvas').getContext('2d');
+	ctx.save();
+	ctx.clearRect(0,0,640,480); // IE (excanvas) optimisation, clear the canvas
+
+	var TransBlocks = 0, SolidBlocks = 0, EnemyBlocks = 0;
+
+	// Draw the Sky
+	ctx.drawImage(imgSky[SkyTexture], 0, 0);
+
+	// Draw each brick
+	var y = 0, _y = 0;
+	while (y < 480)
+	{
+		var x = Math.floor(ScrollX % 32), _x = Math.floor(-ScrollX/32);
+		while (x < 640)
+		{
+			var tile = MapData[_x][_y];
+			if (tile != -1 && tile != 32)
+			{
+				SolidBlocks++;
+				ctx.drawImage(imgTiles, tile * 32, 0, 32, 32, x, y, 32, 32);
+			}
+			x+=32;
+			_x++;
+		}
+		y+=32;
+		_y++;
+	}
+
+	// Animate the player
+	PlayerPause += XForce;
+	if (PlayerPause >= 5 || PlayerPause <= -5)
+	{
+		PlayerFrame = (PlayerFrame + 1) % 3;
+		PlayerPause = 0;
+	}
+
+	// Draw the Player
+	ctx.drawImage(imgPlayer, PlayerFrame * 32 + (PlayerOrientation < 0 ? 96 : 0), 0, 32, 32, Math.floor(PlayerX + ScrollX), PlayerY, 32, 32);
+
+	//
+	// Start of Enemy AI
+	//
+	for (i = 1; i <= EnemyCount; i++)
+	{
+		if (EnemyBullet[i] == 1 && EnemyType[i] == 1)
+		{
+			EnemyBulletX[i] -= 7;
+			if (EnemyBulletX[i] + ScrollX < 0)
+				EnemyBullet[i]= 0;
+				ctx.drawImage(imgEnemy[1], 128, 0, 16, 8, Math.floor(EnemyBulletX[i] + ScrollX), EnemyBulletY[i], 16, 8);
+
+			var EX = EnemyBulletX[i] + ScrollX;
+			var EY = EnemyBulletY[i];
+			var PX = PlayerX + ScrollX;
+			var PY = PlayerY;
+			if (EX > PX && EX < PX + 32 && EY > PY && EY < PY + 32)
+				KillPlayer = 1;
+		}
+
+		if (EnemyAwake[i] || (EnemyX[i] > -ScrollX - 32 && EnemyX[i] < -ScrollX + ResolutionX))
+		{
+			EnemyBlocks++;
+
+			if (EnemyDead[i] == 0)
+			{
+				if (EnemyType[i] < 2)
+				{
+					EnemyAwake[i] = 1;
+					EnemyYForce[i] += 2 + Gravity;
+					EnemyY[i] += EnemyYForce[i];
+					switch (EnemyType[i])
+					{
+					case 0:
+						EnemyFrame[i] = (EnemyFrame[i] + 1) % 2;
+						break;
+					case 1:
+						EnemyFrame[i] = (EnemyFrame[i] + 1) % 2;
+						if (EnemyBullet[i] == 0 && EnemyX[i] > -ScrollX - 32 && EnemyX[i] < -ScrollX + ResolutionX)
+						{
+							var BulletM = (PlayerY - EnemyY[i]) / (PlayerX - EnemyX[i]);
+							if (BulletM > -0.05 && BulletM < 0.05 && PlayerX + 32 < EnemyX[i])
+							{
+								EnemyBulletY[i] = EnemyY[i] + 12;
+								EnemyBulletX[i] = EnemyX[i] - 8;
+								EnemyBulletM[i] = 0;
+								EnemyBullet[i] = 1;
+								EnemyFrame[i] = 3;
+							}
+						}
+						break;
+					}
+				}
+
+				if (PlayerX < EnemyX[i])
+					EnemyX[i] -= EnemyMove[EnemyType[i]];
+				else
+					EnemyX[i] += EnemyMove[EnemyType[i]];
+
+				if (EnemyY[i] > ResolutionX)
+					EnemyDead[i] = 1;
+
+				switch (EnemyType[i])
+				{
+				case 0:
+				case 1:
+					var ELeft = Math.floor(EnemyX[i] / 32);
+					var ETop = Math.floor(EnemyY[i] / 32);
+					// X-Collision Detection
+					if (MapData[ELeft + 1][ETop] > 7)
+						EnemyX[i] = ELeft * 32;
+					if (MapData[ELeft][ETop] > 7)
+						EnemyX[i] = (ELeft + 1) * 32;
+					// Y-Collision Detection
+					if (MapData[ELeft][ETop + 1] > 7 || MapData[ELeft + 1][ETop + 1] > 7)
+					{
+						EnemyY[i] = ETop * 32;
+						EnemyYForce[i] = 0;
+					}
+					if (MapData[ELeft][ETop] > 7)
+					{
+						EnemyY[i] = ETop * 32;
+						EnemyYForce[i] = 0;
+					}
+					break;
+				case 3:
+					var ELeft = Math.floor((EnemyX[i] + 1) / 32);
+					var ETop = Math.floor((EnemyY[i] + 1) / 32);
+					var EWidth = Math.floor((EnemyX[i] - 1) / 32);
+					var EHeight = Math.floor(EnemyY[i] / 32) + 1;
+					// Y-Collision Detection
+					if (MapData[ELeft][ETop + 1] != 5 || MapData[EWidth][EHeight] > 7)
+					{
+						EnemyY[i] = ETop * 32;
+						EnemyYForce[i] = 0;
+					}
+					if (MapData[ELeft][ETop] != 5)
+					{
+						EnemyY[i] = (ETop + 1) * 32;
+						EnemyYForce[i] = 0;
+					}
+					break;
+				}
+
+			} // end if (enemy is alive)
+
+			// Draw the Enemy
+			ctx.drawImage(imgEnemy[EnemyType[i]], EnemyFrame[i] * 32, 0, 32, 32, Math.floor(EnemyX[i] + ScrollX), EnemyY[i], 32, 32);
+
+			// Check for Player/Enemy Collisions
+			switch(EnemyType[i])
+			{
+			case 0:	// brown chestnut
+			case 1:	// blue blob
+				if (PlayerX + 32 > EnemyX[i] && EnemyX[i] + 32 > PlayerX && PlayerY + 32 > EnemyY[i] && EnemyY[i] + 32 > PlayerY && EnemyDead[i] == 0)
+				{
+					if (YForce > 0)
+					{
+						PlayerNeedJump = 1;
+						EnemyFrame[i] = 2;
+						EnemyDead[i] = 1;
+					}
+					else
+					{
+						KillPlayer = 1;
+					}
+				}
+				break;
+			case 2: // broken floor
+				if (PlayerX + 32 > EnemyX[i] && EnemyX[i] + 32 > PlayerX && PlayerY + 32 > EnemyY[i] && EnemyY[i] > PlayerY && EnemyDead[i] == 0)
+				{
+					EnemyYForce[i]++;
+					if (EnemyYForce[i] > 2)
+						EnemyYForce[i] = 2;
+					EnemyY[i] += EnemyYForce[i];
+					var K = 0;
+					while (true)
+					{
+						if (EnemyGroup[EnemyGroupBelong[i]][K] == 0) // TODO this is the bug!
+							break;
+						EnemyY[EnemyGroup[EnemyGroupBelong[i]][K]] = EnemyY[i];
+						K++;
+					}
+					PlayerY = EnemyY[i] - 32;
+					YForce = 0;
+					AllowJump = 1;
+				}
+				break;
+			case 3: // lift
+				EnemyAwake[i] = 1;
+				if (PlayerX + 32 > EnemyX[i] && EnemyX[i] + 32 > PlayerX && PlayerY + 32 > EnemyY[i] + 22 && EnemyY[i] + 32 > PlayerY && EnemyDead[i] == 0)
+				{
+					EnemyY[i] -= 3;
+
+					if (YForce >= 0)
+					{
+						PlayerY = EnemyY[i] - 3;
+						YForce = 0;
+					}
+					AllowJump = 1;
+				}
+				else
+				{
+					EnemyY[i] += 3;
+				}
+				break;
+			case 4:
+				if (PlayerX + 32 > EnemyX[i] && EnemyX[i] + 32 > PlayerX && PlayerY + 32 > EnemyY[i] && EnemyY[i] + 32 > PlayerY && EnemyDead[i] == 0)
+					KillPlayer = 1;
+				break;
+			}
+
+		} // end if (enemy is on screen)
+	} // end for (each enemy)
+
+	if (PlayerNeedJump == 1)
+	{
+		YForce = -18;
+		PlayerNeedJump = 0;
+	}
+
+	//
+	// End of Enemy AI
+	//
+
+
+	ctx.restore();
+}
+
+function fontPrint(FontText, FontX, FontY)
+{
+	FontText = FontText.toUpperCase();
+
+	// Center Text if FontX or FontY == -1
+	if (FontX == -1)
+		FontX = (ResolutionX - FontText.length * 16) / 2;
+	if (FontY == -1)
+		FontY = (ResolutionY - 16) / 2;
+
+	var ctx = document.getElementById('canvas').getContext('2d');
+	ctx.save();
+
+	// Display the text
+	for (var i = 0; i < FontText.length; i++)
+		if (FontText.charCodeAt(i) >= 65 && FontText.charCodeAt(i) <= 91)
+			ctx.drawImage(imgFont, 16 * (FontText.charCodeAt(i) - 65), 0, 16, 16, FontX + (i * 16), FontY, 16, 16);
+ //	   Temp = BitBlt(MainForm.hdc, FontX + (I * 16), FontY, 16, 16, FontForm.Char(Asc(Mid(FontText, I + 1, 1))).hdc, 0, 0, SRCAND)
+
+	ctx.restore();
+}
+
+function loadMap(mapId)
+{
+	// reset some bits & pieces
+	XForce = YForce = 0;
+	PlayerOrientation = 1;
+
+	// map-specific resets
+	var GroupCount = 0;
+	EnemyCount = 0;
+	var EnemyGroups = 0;
+	CoinCount = 0;
+	mapNameDisplayCounter = 0;
+
+	for (var i = 0; i < 100; i++)
+	{
+		EnemyDead[i] = 0;
+		EnemyBullet[i] = 0;
+		EnemyFrame[i] = 0;
+		EnemyGroupBelong[i] = 0;
+	}
+
+	for (var i = 0; i < 20; i++)
+		for (var j = 0; j < 10; j++)
+			EnemyGroup[i][j] = 0;
+
+	MapWidth = mapWidth[mapId];
+	MapHeight = mapHeight[mapId];
+	Gravity = mapGravity[mapId];
+	SkyTexture = mapSky[mapId];
+
+	for (var y = 0; y < MapHeight; y++)
+	{
+		for (var x = 0; x < MapWidth; x++)
+		{
+			tile = mapFile[mapId].charCodeAt(y * MapWidth + x);
+
+			// standard blocks and coins
+			MapData[x][y] = -1;
+			if (tile >= 65 && tile <= 108)
+			{
+				MapData[x][y] = tile - 65;
+				if (MapData[x][y] > 26) // lower-case letters
+					MapData[x][y] -= 6;
+				if (tile == 65) CoinCount = CoinCount + 1;
+				if (tile == 67 || tile == 68 || tile == 69)
+				{
+					ExitX = x;
+					ExitY = y;
+				}
+			}
+			// don't know what these are!!
+			else if (tile >= 109 && tile <= 111)
+				MapData[x][y] = tile - 112;
+			else
+			{
+				// player start
+				if (tile == 49)
+				{
+					MapData[x][y] = -1;
+
+					PlayerX = x * 32;
+					PlayerY = y * 32;
+					ScrollX = -PlayerX + ResolutionX / 2;
+					ScrollY = -PlayerY + ResolutionY / 4;
+					if (ScrollX > 0) ScrollX = 0;
+					if (ScrollY > 0) ScrollY = 0;
+				}
+
+				// enemies and platforms
+				if (tile >= 53 && tile <= 57)
+				{
+					MapData[x][y] = -1;
+					EnemyCount++;
+					EnemyX[EnemyCount] = x * 32;
+					EnemyY[EnemyCount] = y * 32;
+					EnemyType[EnemyCount] = tile - 53;
+					EnemyDead[EnemyCount] = 0;
+					EnemyYForce[EnemyCount] = 0;
+					EnemyAwake[EnemyCount] = 0;
+
+					if (tile == 56)
+						MapData[x][y] = 5;  // lift
+
+					if (EnemyType[EnemyCount] == 2)	// falling platform
+					{
+						if (!LastType == 55)
+						{
+							EnemyGroups++;
+							GroupCount = 0;
+						}
+						GroupCount++;
+						EnemyGroup[EnemyGroups][GroupCount] = EnemyCount;
+
+						EnemyGroupBelong[EnemyCount] = EnemyGroups;
+					}
+				}
+
+				LastType = tile;
+			}
+		}
+	}
+}
+
+
+function handleKeyPress(event)
+{
+	return stopPropagation(event.charCode, event);
+}
+
+function handleKeyDown(event)
+{
+	if (event.keyCode == 32) // space
+		key_jump = true;
+	else if (event.keyCode == 37) // left
+		key_left = true;
+	else if (event.keyCode == 39) // right
+		key_right = true;
+
+	return stopPropagation(event.keyCode, event);
+}
+
+function handleKeyUp(event)
+{
+	if (event.keyCode == 32) // space
+		key_jump = false;
+	else if (event.keyCode == 37) // left
+		key_left = false;
+	else if (event.keyCode == 39) // right
+		key_right = false;
+
+	return stopPropagation(event.keyCode, event);
+}
+
+function stopPropagation(keyCode, event) {
+	if (keyCode == 32 || keyCode == 37 || keyCode == 39) {
+		if (event.preventDefault) event.preventDefault();
+		if (event.stopPropagation) event.stopPropagation();
+		return false;
+	}
+}
+
+</script>
+
+<body bgcolor="black" text="white" link="red" alink="red"
+  style="margin-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 0;"
+  onload="preinit();" onkeypress="return (event.keyCode >= 37 && event.keyCode <= 40) ? false : true;">
+
+<div align="center">
+<canvas id="canvas" width="640" height="480">
+Sorry, but your web browser cannot run this game. Try updating to a more recent browser release.
+</canvas>
+<div id="debug"/>
+</div>
+<script type="text/javascript">
+// debug objects
+var _debug = document.getElementById('debug');
+</script>
+<!--[if IE]><div>Game running slowly in Internet Explorer? Try a different browser.</div><![endif]-->
+</body>
+</html>

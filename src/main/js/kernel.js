@@ -157,7 +157,7 @@ function WebActor(repl)
         this.currentScreenURL = screenURL;
         this.currentScreenMethod = screenMethod;
         
-        this.repl.print("Going to URL '" + screenURL + "' with method '" + screenMethod + "'.");
+        //this.repl.print("Going to URL '" + screenURL + "' with method '" + screenMethod + "'.");
         this.addEventListener(this.chromeWin);
         
         // this method basically does an HTTP GET of the screenURL
@@ -184,6 +184,7 @@ function WebActor(repl)
         
         var isAllowed, screenResponse, screenURL = this.currentScreenURL,
             methodName = this.currentScreenMethod, params = this.params;
+        params.event = event;
         
         
         // THIS NEXT if STATEMENT IS FOR DEBUG
@@ -334,19 +335,95 @@ function WebActor(repl)
     
     this.dispatchClickEvent = function (eventWindow, toClick)
     {
-    	need to figure out how to click on a XUL button in the chrome window
-    	
-    	// NOTE: do not use the this.currentScreenURL or the this.currentScreenMethod
+        //need to figure out how to click on a XUL button in the chrome window
+        
+        /*
+         
+Oh, if you're writing a test, you should just use the methods in
+nsIDOMWindowUtils. sendMouseEvent in your case should work fine, which
+fires a mouse event as the platform-specific widget code would send it.
+You'll need to fire both a 'mousedown' and a 'mouseup'.          
+
+
+
+Hi,
+
+I'm trying to simulate mouse click on some element through
+sendMouseEvent() (I can't use element.dispatchEvent() for some
+reasons).
+I'm experiencing problems with passing correct parameters.
+Say if I have a DOM element how can I find x,y for sendMouseEvent?
+
+My current code is as follows:
+function simulateClick(element) {
+// get nsIDOMWindowUtils from content window
+var win = element.ownerDocument.defaultView;
+var req = win.QueryInterface(Ci.nsIInterfaceRequestor);
+var utils = req.getInterface(Ci.nsIDOMWindowUtils);
+
+var pos = findElementPosition(element);
+var x = pos.x+win.scrollX, y = pos.y+win.scrollY;
+
+utils.sendMouseEvent("mousedown", x, y, 0, 1, 0);
+utils.sendMouseEvent("mouseup", x, y, 0, 1, 0);
+}
+
+function findElementPosition(element) {
+var e = element;
+var pos = {x: 0, y: 0};
+while (e) {
+var x = 0, y = 0, ee = e;
+while (ee) {
+x += ee.offsetLeft;
+y += ee.offsetTop;
+ee = ee.offsetParent;
+}
+pos.x += x;
+pos.y += y;
+e = e.ownerDocument.defaultView.frameElement;
+}
+
+pos.x += Math.round(element.offsetWidth/2);
+pos.y += Math.round(element.offsetHeight/2);
+
+return pos;
+}
+
+
+Thanks,
+Denis 
+
+         
+         
+         */
+        
+        
+        // NOTE: do not use the this.currentScreenURL or the this.currentScreenMethod
         // or the this.params objects inside this method as those objects are
         // being set for the next page by he time this method is called
         
-        this.repl.print("Inside dispatchClickEvent 1 : " + eventWindow);
-        var mouseClick = eventWindow.document.createEvent("MouseEvents");
-        //this.repl.print("Inside dispatchClickEvent 2");
-        mouseClick.initMouseEvent('click', true, true, eventWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-        //this.repl.print("Inside dispatchClickEvent 3");
-        toClick.dispatchEvent(mouseClick);
-        //this.repl.print("Inside dispatchClickEvent 4");
+        // click, mousedown, mouseup, mouseover, mousemove, mouseout.
+        
+        //check to see if toClick is a toolbarbutton element and if it is then
+        //try to use the .click method rather than trying the dispatchEvent method
+        //or try to dispatch a mousedown and mouseup event
+        
+        
+        //this.repl.print("Inside dispatchClickEvent 1 : " + eventWindow + " :: tagName " + toClick.tagName);
+        if ("toolbarbutton" === toClick.tagName)
+        {
+            toClick.click();
+        }
+        else
+        {
+            var mouseClick = eventWindow.document.createEvent("MouseEvents");
+            //this.repl.print("Inside dispatchClickEvent 2");
+            mouseClick.initMouseEvent('click', true, true, eventWindow, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+            //this.repl.print("Inside dispatchClickEvent 3");
+            toClick.dispatchEvent(mouseClick);
+            //this.debugEvent(mouseClick);
+            //this.repl.print("Inside dispatchClickEvent 4");
+        }
     };
     
     
@@ -493,6 +570,25 @@ function WebActor(repl)
     };
 
 
+    this.debugObject = function (obj)
+    {
+        var attr;
+        
+        // This section is for debugging
+        this.repl.print("===================================================================================================================================");
+        this.repl.print("The object is: " + obj);
+        
+        for (attr in obj)
+        {
+            if (attr)
+            {
+                this.repl.print("The attributes of the object are: " + attr + " :: " + eval("obj." + attr));
+                //this.repl.print("The attributes of the object are: " + attr + " :: " + eval("typeof obj." + attr));
+            }
+        }
+        this.repl.print("===================================================================================================================================");
+    };
+    
     
     this.debugEvent = function (event)
     {
@@ -533,15 +629,26 @@ function WebActor(repl)
     };
     
     
+    this.findDOMWindow = function (event)
+    {
+        var foundWindow = this.findEventWindow(event);
+        
+        if (foundWindow  instanceof Ci.nsIDOMWindow)
+        {
+            foundWindow = foundWindow.content.window;
+        }
+        //this.debugObject(foundWindow);
+        //this.repl.print("This is the dom window: " + foundWindow);
+        
+        return foundWindow;
+    };
+    
+    
     this.findEventWindow = function (event)
     {
         var foundWindow = this.origDomWindow;
         if (event)
         {
-            //this.repl.print("event.target: " + event.target);
-            //this.repl.print("event.target.ownerDocument: " + event.target.ownerDocument);
-            //this.repl.print("event.target.ownerDocument.defaultView: " + event.target.ownerDocument.defaultView);
-            //this.repl.print("event.target.ownerDocument.defaultView.window: " + event.target.ownerDocument.defaultView.window);
             // TODO: set foundWindow to the dom window where the event took place!!
             if (event.target && event.target.ownerDocument &&
                event.target.ownerDocument.defaultView &&
@@ -551,11 +658,27 @@ function WebActor(repl)
             }
             else
             {
-                this.repl.print("Could not find DOM window for event " + event);
+                this.repl.print("Could not find owner window for event " + event);
+                if (event.target)
+                {
+                    this.repl.print("event.target: " + event.target);
+                    if (event.target.ownerDocument)
+                    {
+                        this.repl.print("event.target.ownerDocument: " + event.target.ownerDocument);
+                        if (event.target.ownerDocument.defaultView)
+                        {
+                            this.repl.print("event.target.ownerDocument.defaultView: " + event.target.ownerDocument.defaultView);
+                            if (event.target.ownerDocument.defaultView.window)
+                            {
+                                this.repl.print("event.target.ownerDocument.defaultView.window: " + event.target.ownerDocument.defaultView.window);
+                            }
+                        }
+                    }
+                }
             }
         }
         
-        this.repl.print("Found window: " + foundWindow);
+        //this.repl.print("Found window: " + foundWindow);
         
         return foundWindow;
     };
