@@ -12,7 +12,7 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	private static final Map<String, String> stateOptions = new HashMap<String, String>();
 	private static final Map<String, String> countryOptions = new HashMap<String, String>();
 	private static final Map<String, String> unitOptions = new HashMap<String, String>();
-	private static final Map<String, String> activeOptions = new HashMap<String, String>();
+	private static final Map<String, String> yesNoOptions = new HashMap<String, String>();
 	static
 	{
 		stateOptions.put("UT", "UT");
@@ -33,7 +33,11 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		unitOptions.put("PROVO NORTH PARK", "Provo North Park");
 		unitOptions.put("COMMUNITY UNITS", "Community Units");
 		
-		activeOptions.put("YES", "yes");
+		yesNoOptions.put("Y", "Troop Only");
+		yesNoOptions.put("YES", "Troop Only");
+		yesNoOptions.put("N", "All Units");
+		yesNoOptions.put("NO", "All Units");
+		yesNoOptions.put("", "All Units");
 	}
 	
 	public boolean isAllNumbers(String data)
@@ -69,7 +73,7 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	
 	public String getCanonicalActive(String canonicalData)
 	{
-		return activeOptions.get(canonicalData);
+		return yesNoOptions.get(canonicalData);
 	}
 	
 	public String getCanonicalMBNumber(String mbName)
@@ -88,6 +92,10 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	{
 		String[] canonicalData = new String[ImportField.getFieldCount()];
 		
+		//if(mostRecentDataFile.toString().indexOf("MBC") != -1)
+		//{
+		//	System.out.println("Breaking on MBC.");
+		//}
 		// the length and order of mbData is different than the length and order of canonicalData
 		for(int i = 0; i < mbData.length; ++i)
 		{
@@ -247,9 +255,13 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 						canonicalData = currentCanonicalData;
 					}
 				}
+				else if(field.getDefaultValue() != null && field.getDefaultValue().trim().length() > 0)
+				{
+					canonicalData = field.getDefaultValue();
+				}
 				
 			}
-			else if(ACTIVE_OPTION.equals(field.getType()))
+			else if(YES_NO_OPTION.equals(field.getType()))
 			{
 				canonicalData = getCanonicalActive(canonicalData.toUpperCase());
 				if(canonicalData == null)
@@ -259,7 +271,8 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	
 				if(canonicalData == null || canonicalData.length() <= 0)
 				{
-					throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a ACTIVE_OPTION mapping: " + data);
+					//throw new RuntimeException("The field '" + field.getName() + " :: " + field.getType() + "' does not have a YES_NO_OPTION mapping: " + data);
+					canonicalData = "";
 				}
 			}
 			else if("Note".equals(field.getName()))
@@ -288,6 +301,10 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 					if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData != null)
 					{
 						canonicalData = currentCanonicalData + "," + canonicalData;
+					}
+					else if(currentCanonicalData != null && currentCanonicalData.length() > 0 && canonicalData == null)
+					{
+						canonicalData = currentCanonicalData;
 					}
 				}
 			}
@@ -354,6 +371,7 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			// TODO: add code here to remove duplicates
 			String[] mbVals = displayVal.split(",");
 			displayVal = "";
+			//boolean hasAtLeastOneMB = false;
 			for(int i = 0; i < mbVals.length; ++i)
 			{
 				for(int j = i+1; j < mbVals.length; ++j)
@@ -368,7 +386,8 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 				{
 					if(MeritBadge.showMBNames)
 					{
-						displayVal += MeritBadge.findByNumber(Integer.parseInt(mbVals[i])).getDisplayName() + "\t";
+						int mbNum = Integer.parseInt(mbVals[i]);
+						displayVal += MeritBadge.findByNumber(mbNum).getDisplayName() + "\t" + mbNum + "\t";
 					}
 					else if(MeritBadge.prepareForImport)
 					{
@@ -378,6 +397,8 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 					{
 						displayVal += mbVals[i] + ",";
 					}
+					
+					//hasAtLeastOneMB = true;
 				}
 			}
 			
@@ -387,6 +408,11 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 			}
 			
 			if(!MeritBadge.prepareForImport) { displayVal = "\"" + displayVal + "\""; }
+
+			//if(!hasAtLeastOneMB)
+			//{
+			//	displayVal = "Unassigned Counselor";
+			//}
 		}
 		
 		return displayVal.trim();
@@ -396,10 +422,13 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 	public void swapFirstnameAndLastnameIfNeeded(MBCounselor counselor)
 	{
 		// need to handle the last 130 counselors and the lastname first / firstname last problem
-		String swapKey = counselor.getLastName().toLowerCase()+"_"+counselor.getFirstName().toLowerCase();
-		if(MergeMBCounselors.swapNameProps.get(swapKey) != null)
+		if(counselor.getLastName() != null && counselor.getFirstName() != null)
 		{
-			MBCounselor.swapFirstNameAndLastName(counselor.values, new File("canonical"));
+			String swapKey = counselor.getLastName().toLowerCase()+"_"+counselor.getFirstName().toLowerCase();
+			if(MergeMBCounselors.swapNameProps.get(swapKey) != null)
+			{
+				MBCounselor.swapFirstNameAndLastName(counselor.values, new File("canonical"));
+			}
 		}
 	}
 	
@@ -409,11 +438,23 @@ public abstract class AbstractCanonicalizer implements Canonicalizer
 		String[] values = counselor.getValues();
 		StringBuilder buf = new StringBuilder();
 		
+		if("4422469".equalsIgnoreCase(counselor.getRegistrationNumber()))
+		{
+			System.out.println("Found 4422469.");
+		}
+		
 		for(int i = 0; i < values.length; ++i)
 		{
 			// instead of just appending values[i], rather make sure values[i] is displayed properly!!
 			ImportField field = ImportField.findByIndex(i);
-			buf.append(values[i] == null ? "" : getCanonicalDisplayString(values[i], field));
+			if(values[i] == null && "MBList".equals(field.getType()))
+			{
+				buf.append("Unassigned Counselor\t0");
+			}
+			else
+			{
+				buf.append(values[i] == null ? "" : getCanonicalDisplayString(values[i], field));
+			}
 			if(values[i] != null && "Last_Name".equals(field.getName()) && counselor.getLastNameSuffix() != null)
 			{
 				buf.append(" "+getCanonicalDisplayString(counselor.getLastNameSuffix(), field));

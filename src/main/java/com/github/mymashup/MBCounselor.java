@@ -166,6 +166,11 @@ public class MBCounselor
 	{
 		boolean valueChanged = false;
 		
+		//if(isField(field, "Badges_Taught_Starts_Here"))
+		//{
+		//	System.out.println("Setting Badges_Taught_Starts_Here");
+		//}
+		
 		if(dataOrigin.equals(field.getOwner()) || "canonical".equalsIgnoreCase(dataOrigin))
 		{
 			// need logic here to determine if mbData[index] is empty or null or whether it
@@ -177,12 +182,12 @@ public class MBCounselor
 				{
 					if(verbose || reportValuesChanged)
 					{
-						if(verbose || (/*!newValue[field.getIndex()].startsWith(mbData[field.getIndex()]) &&*/
-						   !alreadyContainsPhone(mbData, field, newValue) &&
-						   !isPhone(field)))
-						{
+						//if(verbose || (/*!newValue[field.getIndex()].startsWith(mbData[field.getIndex()]) &&*/
+						//   !alreadyContainsPhone(mbData, field, newValue) &&
+						//   !isPhone(field)))
+						//{
 							System.out.println(">> Changing value of field '" + field.getName() + "' from '" + mbData[field.getIndex()] + "' to '" + newValue[field.getIndex()] + "' --: " + toString(mbData, oldDataFile) + " <--> " + toString(newValue, newDataFile));
-						}
+						//}
 					}
 					
 					valueChanged = true;
@@ -222,6 +227,19 @@ public class MBCounselor
 		
 		return valueChanged;
 	}
+	
+	private static boolean isField(ImportField field, String fieldName)
+	{
+		boolean retVal = false;
+		
+		if(fieldName.equals(field.getName()))
+		{
+			retVal = true;
+		}
+		
+		return retVal;
+	}
+	
 	
 	private static boolean isPhone(ImportField field)
 	{

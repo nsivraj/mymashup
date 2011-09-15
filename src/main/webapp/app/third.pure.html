@@ -1,0 +1,35 @@
+<html>
+<head>
+  <title>Third PURE Unobtrusive Rendering Engine</title>
+  <script src="../js/jquery.js"></script>
+  <script src="../js/pure.js"></script>
+  <script src="../js/third.directive.js"></script>
+  <script src="../js/second.data.js"></script>
+  <script src="../js/third.render.js" defer></script>
+</head>
+<body>
+
+  <!-- HTML template -->
+  <div id="template">
+    Hello <a id="theWho" href="http://www.yahoo.com">Hi Lo</a>
+    Bob <a>Hi Lo</a>
+  </div>
+
+  <div id="template">
+    Hello <a href="yumster">Hi Lo</a>
+    Bob <a id="theWho">Hi Lo</a>
+  </div>
+
+  <div id="templer">
+    Hello <a>Hi Lo</a>
+    Bob <a id="theWho" href="http://www.gs.com/">Hi Lo</a>
+  </div>
+
+  <ul id="template">
+    <li id="animals">animal 1</li>
+    <li>animal 2</li>
+    <li>animal 3</li>
+  </ul>
+  
+</body>
+</html>

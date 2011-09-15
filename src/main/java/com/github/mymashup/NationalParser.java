@@ -7,9 +7,21 @@ public class NationalParser extends BaseMBParser
 {
 	public boolean doNotMergeData(MBCounselor counselor, String[] mbData)
 	{
-		return counselor.getMostRecentDataFile().equals(toParse);
+		//return counselor.getMostRecentDataFile().equals(toParse);
+		return false;
 	}
 	
+	public boolean importData(MBCounselor counselor, String[] mbData)
+	{
+		boolean importData = counselor != null;
+		
+		//if(!importData)
+		//{
+			//System.out.println("Not importing data: "+mbData);
+		//}
+		return importData;
+	}
+
 	public String[] parseFirstRow(BufferedReader reader) throws IOException
 	{
 		String firstRowFromFile = reader.readLine();
@@ -23,7 +35,7 @@ public class NationalParser extends BaseMBParser
 		{
 			if(this.getMapping()[i].equals("Badges_Taught_Starts_Here"))
 			{
-				if(values[i] != null && values[i].trim().length() > 0)
+				/*if(values[i] != null && values[i].trim().length() > 0)
 				{
 					String canonicalMBName = values[i].trim().replace(" ", "").toLowerCase();
 					if("automotivemaintenance".equalsIgnoreCase(canonicalMBName))
@@ -53,7 +65,7 @@ public class NationalParser extends BaseMBParser
 						//mbName.set(canonicalMBName);
 						values[i] = canonicalMBName;
 					}
-				}
+				}*/
 				
 				//values[i] = mbName.get();
 			}

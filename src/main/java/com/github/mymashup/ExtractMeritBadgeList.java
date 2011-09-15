@@ -7,17 +7,17 @@ import java.io.IOException;
 
 public class ExtractMeritBadgeList
 {
-	private File doubleknotFile;
+	private File inputFile;
 	
-	public ExtractMeritBadgeList(String doubleknotFilename)
+	public ExtractMeritBadgeList(String inputFilename)
 	{
-		doubleknotFile = new File(doubleknotFilename);
+		inputFile = new File(inputFilename);
 	}
 
-	private void extract() throws IOException
+	private void extractFromDoubleKnot() throws IOException
 	{
 		String nextLine = null;
-		BufferedReader reader = new BufferedReader(new FileReader(doubleknotFile));
+		BufferedReader reader = new BufferedReader(new FileReader(inputFile));
 		
 		//System.out.println("private static final String[][] MBs = \n{");
 		System.out.println("private static final HashMap<String, String> MBs = new HashMap<String, String>();");
@@ -51,10 +51,31 @@ public class ExtractMeritBadgeList
 		reader.close();
 	}
 
+	private void extractFromMBRefList() throws IOException
+	{
+		String nextLine = null;
+		BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+		int counter = 0;
+		
+		while((nextLine = reader.readLine()) != null)
+		{
+			nextLine = nextLine.trim();
+			if(nextLine.startsWith("Badge")) continue;
+			String[] parts = nextLine.split("\t");
+			counter++;
+			System.out.println(counter+".canonicalName="+parts[0].toLowerCase().replace(" ", ""));
+			System.out.println(counter+".displayName="+parts[0]);
+			System.out.println(counter+".number="+parts[1]);
+		}
+		
+		reader.close();
+	}
+
 	public static final void main(String[] args) throws IOException
 	{
 		ExtractMeritBadgeList extract = new ExtractMeritBadgeList(args[0]);
-		extract.extract();
+		if(args[0].toLowerCase().indexOf("double") != -1 && args[0].toLowerCase().indexOf("knot") != -1) { extract.extractFromDoubleKnot(); }
+		else if(args[0].toLowerCase().indexOf("reflist") != -1) { extract.extractFromMBRefList(); }
 	}
 
 }

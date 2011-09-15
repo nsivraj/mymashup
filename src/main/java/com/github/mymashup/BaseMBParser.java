@@ -134,40 +134,43 @@ public abstract class BaseMBParser implements MBParser
 					}
 					
 					MBCounselor counselor = canonicalData.findCounselor(mbData, this);
-					if(counselor == null || doNotMergeData(counselor, mbData))
+					if(importData(counselor, mbData))
 					{
-						if(counselor != null)
+						if(counselor == null || doNotMergeData(counselor, mbData))
 						{
-							System.out.println(">> Found counselor '" + counselor + "' but not merging data '" + MBCounselor.toString(mbData, toParse) + "' "+this.getClass());
+							if(counselor != null)
+							{
+								System.out.println(">> Found counselor '" + counselor + "' but not merging data '" + MBCounselor.toString(mbData, toParse) + "' "+this.getClass());
+							}
+							counselor = new MBCounselor(mbData);
+							counselor.setMostRecentDataFile(toParse);
+							canonicalData.addCounselor(counselor, this);
 						}
-						counselor = new MBCounselor(mbData);
-						counselor.setMostRecentDataFile(toParse);
-						canonicalData.addCounselor(counselor, this);
-					}
-					else
-					{
-						String[] oldValues = new String[mbData.length];
-						System.arraycopy(counselor.getValues(), 0, oldValues, 0, mbData.length);
-						File oldMostRecentDataFile = counselor.getMostRecentDataFile();
-						boolean[] hasChanged = counselor.mergeData(mbData, toParse, getDataOrigin());
-						for(int i = 0; i < hasChanged.length; ++i)
+						else
 						{
-							//if(hasChanged[i]) { counselor.setMostRecentDataFile(toParse); }
-							
-							if(hasChanged[i] && MBCounselor.isLastName(i))
+							String[] oldValues = new String[mbData.length];
+							System.arraycopy(counselor.getValues(), 0, oldValues, 0, mbData.length);
+							File oldMostRecentDataFile = counselor.getMostRecentDataFile();
+							boolean[] hasChanged = counselor.mergeData(mbData, toParse, getDataOrigin());
+							for(int i = 0; i < hasChanged.length; ++i)
 							{
-								canonicalData.reorderLastNameMap(counselor, oldValues, oldMostRecentDataFile, i, this);
-							}
-							else if(hasChanged[i] && MBCounselor.isRegistrationNumber(i))
-							{
-								canonicalData.reorderRegistrationNumberMap(counselor, oldValues, oldMostRecentDataFile, i);
+								//if(hasChanged[i]) { counselor.setMostRecentDataFile(toParse); }
+								
+								if(hasChanged[i] && MBCounselor.isLastName(i))
+								{
+									canonicalData.reorderLastNameMap(counselor, oldValues, oldMostRecentDataFile, i, this);
+								}
+								else if(hasChanged[i] && MBCounselor.isRegistrationNumber(i))
+								{
+									canonicalData.reorderRegistrationNumberMap(counselor, oldValues, oldMostRecentDataFile, i);
+								}
 							}
 						}
-					}
-					
-					if(lastNameSuffix != null && counselor != null)
-					{
-						counselor.setLastNameSuffix(lastNameSuffix);
+						
+						if(lastNameSuffix != null && counselor != null)
+						{
+							counselor.setLastNameSuffix(lastNameSuffix);
+						}
 					}
 				}
 			}
@@ -177,5 +180,9 @@ public abstract class BaseMBParser implements MBParser
 	}
 
 	
+	public boolean importData(MBCounselor counselor, String[] mbData)
+	{
+		return true;
+	}
 	
 }

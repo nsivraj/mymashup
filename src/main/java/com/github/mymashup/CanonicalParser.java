@@ -47,7 +47,8 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 		
 		for(int i = 0; i < fields.length; ++i)
 		{
-			out.write(fields[i]);
+			//out.write(fields[i]);
+			out.write(ImportField.findByName(fields[i]).getDisplayName());
 			if(i < (fields.length + 1))
 			{
 				out.write("\t");
@@ -95,11 +96,12 @@ public class CanonicalParser extends BaseMBParser implements CanonicalData
 //			other than lastname or firstname (this is a problem because the firstname and lastname
 //			data is messed up in the FortUtah-MCR-09032010-BSA.xlsx file, need to verify this
 //			with Arturo)
-			if(counselor != null && counselor.matchesOtherAttributes(canonicalData, parser.getToParse(), parser.getDataOrigin(), false) == 0)
-			{
-				System.out.println("The counselor '" + counselor + "' matches on Registration Number '" + MBCounselor.getRegistrationNumber(canonicalData) + "' but not on other attributes '" + MBCounselor.toString(canonicalData, parser.getToParse()) + "'");
-				counselor = null;
-			}
+			
+			//if(counselor != null && counselor.matchesOtherAttributes(canonicalData, parser.getToParse(), parser.getDataOrigin(), false) == 0)
+			//{
+			//	System.out.println("The counselor '" + counselor + "' matches on Registration Number '" + MBCounselor.getRegistrationNumber(canonicalData) + "' but not on other attributes '" + MBCounselor.toString(canonicalData, parser.getToParse()) + "'");
+			//	counselor = null;
+			//}
 			
 			
 			// next attempt an exact match on Last_Name and one of (address1, address2, phone1, phone2, fax, email, email2)

@@ -17,7 +17,7 @@ public interface Canonicalizer
 	public static final String PHONE = "Phone";
 	public static final String UNIT_OPTION = "UnitOption";
 	public static final String DATE = "Date";
-	public static final String ACTIVE_OPTION = "ActiveOption";
+	public static final String YES_NO_OPTION = "YesNoOption";
 	public static final String MB_LIST = "MBList";
 	
 	public String[] getCanonicalData(File mostRecentDataFile, String dataOrigin, String[] mbData, String[] mapping) throws ParseException;

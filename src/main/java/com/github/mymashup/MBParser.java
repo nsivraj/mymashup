@@ -14,4 +14,5 @@ interface MBParser
 	String[] parseNextLine(BufferedReader reader, String nextLine) throws IOException;
 	File getToParse();
 	boolean doNotMergeData(MBCounselor counselor, String[] mbData);
+	boolean importData(MBCounselor counselor, String[] mbData);
 }
