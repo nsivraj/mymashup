@@ -22,43 +22,29 @@ var animalDirective = {
     			
     			// add code to remove all sibling nodes
     			
-    			return "Inside Function "+count;
+    			return "Inside Function "+count+" :: "+arg.item.name;
 			}
     	}
 	}
 };
+
 
 var emptyDirective = {};
 
 var preDirective = {
 	'li#animals':function()
 	{
-	    //alert("inside preDirective funtion: "+this);
-		var i = 0;
-		var dollar = $;
-		var dollarThis = dollar(this);
-		dollarThis.each(function(){
-			var secondDollar = $;
-			var secondDollarThis = secondDollar(this);
-			//i++ % 2 ? $(this).fadeOut(3000) : $(this).hide(3000);
-			i+=1;
-			//alert(i+") inside preDirective each function: "+$(this));
-			// add code here to remove the siblings of the 'li' element
-		});
+		$(this).removeAllSiblings();
 	}
 };
 
 var postDirective = {
 	li:function()
 	{
-	    //alert("inside postDirective funtion: "+this);
-		var i = 0;
-		var dollar = $;
-		var dollarThis = dollar(this);
-		dollarThis.each(function(){
-			var secondDollar = $;
-			var secondDollarThis = secondDollar(this);
-			i++ % 2 ? secondDollarThis.fadeOut(3000) : secondDollarThis.hide(3000);
+		var i=0;
+		$(this).each(function(){
+			//i++ % 2 ? $(this).fadeOut(3000) : $(this).hide(3000);
+			$(this).hide(3000);
 		});
 	}
 };

@@ -6,6 +6,7 @@
         {name:'mouse'},
         {name:'cat'},
         {name:'bird'},
+        {name:'shoe in'},
         {name:'dog'}
       ]
     };

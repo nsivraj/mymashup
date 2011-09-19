@@ -4,4 +4,4 @@
 
     // note the use of render instead of autoRender
     //$('ul#template').render(animalData, animalDirective);
-    $('ul#template').renderWithPrePost(animalData, animalDirective, preDirective, postDirective);
+    $('ul#template').renderWithPrePost(animalData, animalDirective, preDirective, emptyDirective);
