@@ -7,6 +7,7 @@
           <string>app/third.pure.html</string>
           <string>app/second.pure.html</string>
           <string>app/first.pure.html</string>
+          <string>app/fifth.pure.html</string>
           <string>app/fourth.pure.html</string>
           <string>WEB-INF/web.xml</string>
           <string>placeholder.txt</string>
@@ -16,6 +17,7 @@
           <string>js/fourth.directive.js</string>
           <string>js/prototype.js</string>
           <string>js/second.directive.js</string>
+          <string>js/fifth.data.js</string>
           <string>js/fourth.plugins.js</string>
           <string>js/dojo.js</string>
           <string>js/sly.js</string>

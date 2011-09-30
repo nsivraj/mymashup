@@ -10,6 +10,11 @@ var animalDirective = {
     	'animal<-someAnimals':{
 			'.':function(arg)
 			{
+				// need to figure out how to set the id attribute on each of the nodes
+				// that get created here because we are ending up with each node
+				// having the same id attribute which is not always correct with respect
+				// to handling code
+	
     	        count+=1;
     			//alert(count+") "+arg); // arg is the passed in argument
     			//alert(count+") arg.context: "+arg.context); // not sure what arg.context is yet
@@ -44,7 +49,8 @@ var postDirective = {
 		var i=0;
 		$(this).each(function(){
 			//i++ % 2 ? $(this).fadeOut(3000) : $(this).hide(3000);
-			$(this).hide(3000);
+			//$(this).hide(3000);
+			//$(this).fadeOut(3000);
 		});
 	}
 };

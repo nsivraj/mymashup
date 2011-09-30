@@ -49,7 +49,8 @@ var postDirective = {
 		var i=0;
 		$(this).each(function(){
 			//i++ % 2 ? $(this).fadeOut(3000) : $(this).hide(3000);
-			$(this).hide(3000);
+			//$(this).hide(3000);
+			//$(this).fadeOut(3000);
 		});
 	}
 };

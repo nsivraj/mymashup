@@ -312,16 +312,16 @@ WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
                     //sure why as it should, this is the case there the element that was
                     //clicked on originally is an anchor rather than an href...
                     
-                	actually, these two lines do cause the browser to change but the propagation of the
-                	event through the dom takes longer than the for loop that we are in and 
-                	so another onclick callback method needs to be provided so that it can
-                	launch back into this method to finish the for loop because an onload
-                	event does not get triggered by the this.dispatchClickEvent method call
-                	for an anchor; basically, this method needs to be reinvoked for every
-                	event that ocurrs as the event propagates through the DOM, so that one
-                	invocation only goes through the for loop once, in fact, the for loop
-                	should really be changed to a simple if statement and the params.crumbsIndex
-                	gets incremented by one.
+                	//actually, these two lines do cause the browser to change but the propagation of the
+                	//event through the dom takes longer than the for loop that we are in and 
+                	//so another onclick callback method needs to be provided so that it can
+                	//launch back into this method to finish the for loop because an onload
+                	//event does not get triggered by the this.dispatchClickEvent method call
+                	//for an anchor; basically, this method needs to be reinvoked for every
+                	//event that ocurrs as the event propagates through the DOM, so that one
+                	//invocation only goes through the for loop once, in fact, the for loop
+                	//should really be changed to a simple if statement and the params.crumbsIndex
+                	//gets incremented by one.
                 	
                     webActor.gotoNextURL("", "crumbProcessor", params);
                     this.dispatchClickEvent(eventWindow, crumbElements[0]);

@@ -47,6 +47,11 @@ function loadActor(whichActor)
 	{
 		repl.load(mozreplInitDir + "/crumbs.js", repl);
 	}
+	else if ("mysearch" === whichActor)
+	{
+		repl.load(mozreplInitDir + "/mysearch.js", repl);
+		repl.catchEvents();
+	}
 }
 
 

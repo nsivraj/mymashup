@@ -1,3 +1,114 @@
+Add plugin to pick up search criteria from targeted text fields
+search through previously browsed content
+Write a browser plugin that allows you to search through previously browsed content
+Write the plugin for Firefox, Google Chrome and IE
+First need to come up with a good server side database schema for storing keywords and a URL
+
+filipino - tandaan
+icelandic - muna
+maltese - ftakar
+swahili - kumbuka
+welsh - cofio or gofio
+
+
+icelandic - leit (search)
+
+zapamiti
+
+XBSDB + jStorage for in browser database and persistance
+
+Allow a google login or a facebook login or an openid login to identify the person when needed
+
+
+use Ctrl + Shift + F to activate mysearch anywhere in the browser (need to pick a reasonable
+location, maybe top right corner of currently loaded Browser document), it will be a floating
+text field with a search dropdown...., the ESC (escape) key will dismiss it or a mouse click
+outside of the mysearch area will dismiss it or by selecting an item in the dropdown will dismiss it,
+a mouse click in the text field will move the cursor to that position in the text field
+
+
+
+This is how to keep the div always visible in newer browsers:
+<style style="text/css">
+#staticcontent{
+position:fixed;
+left: 10px;
+top: 5px;
+}
+</style>
+
+<div id="staticcontent" style="width: 135px">
+This content stays perfectly static on the screen, but only in Firefox.
+As of IE6, IE doesn't support it.
+</div>
+
+
+
+
+
+This is the html and javascript for keeping a div always visible in the page
+for older browsers
+<div id="staticcontent" style="position:absolute; border:1px solid black; background-color: lightyellow; width: 135px;">
+This content stays afloat and always in view, even if you scroll the page.
+</div>
+
+
+<script type="text/javascript">
+//define universal reference to "staticcontent"
+var crossobj=document.all? document.all.staticcontent : document.getElementById("staticcontent")
+
+//define reference to the body object in IE
+var iebody=(document.compatMode && document.compatMode != "BackCompat")? document.documentElement : document.body
+
+function positionit(){
+//define universal dsoc left point
+var dsocleft=document.all? iebody.scrollLeft : pageXOffset
+//define universal dsoc top point
+var dsoctop=document.all? iebody.scrollTop : pageYOffset
+
+//if the user is using IE 4+ or Firefox/ NS6+
+if (document.all||document.getElementById){
+crossobj.style.left=parseInt(dsocleft)+5+"px"
+crossobj.style.top=dsoctop+5+"px"
+}
+}
+setInterval("positionit()",100)
+</script>
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------
+
+When you have a java variable declared, how do you get the normalized JSON string that
+represents the java variable?
+
+Now take that normalized JSON string and convert it to java source code for a java
+object that when instantiated will then be serialized to that exact same JSON string.
+
+See what has already be done in the tech space of serializing java object to JSON and
+deserializing JjsonifySON to java object. You should be able to start with either a javascript
+variable and get java source code or a java object and get javascript JSON. 
+ 
+Find the already existing .js libraries that can take a javascript variable and give back the
+corresponding .java annotated source code that will serialize into the javascript variable
+when instantiated and passed to a java2JSON serializer
+
+Also, find the already existing .java libraries that can take an annotated java object and
+serialize it into a JSON string such that it is represented as expected in the javascript
+as a javascript variable
+
+Make it so that you can define a Java class with an annotation that will automatically JSONify the
+Java object into a JSON string which can be used in the browser, and also, create a tool that
+can take a javascript .js file variable and JSONify the variable to a JSON string which can then
+be converted into an annotated Java object which will give the same javascript variable data structure
+when that Java object is JSONified!
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------
 // load a sequence of pages and make it so that each page
 // loads completely before the subsequent page loads
 

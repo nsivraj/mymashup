@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Javascript Autocomplete Combobox - find as you type</title>	<style type="text/css">
+	body { font-family: "Arial",sans-serif; }
+	p { text-align: justify; }
+	p.description { font-weight: bold; }
+	div.flink a { padding: 0px 0.3ex 0px 0.3ex; line-height: 1.5em; }
+	
+	@media screen {
+		body { width: 728px; margin: 6px auto; }
+		h1 { color: #434300; background-color: white; margin: 0px; padding: 0px; }
+		h2 { color: #004343; background-color: white; }
+		h3 { color: #430043; background-color: white; }
+		p.description:first-letter {
+			font-size: 2em; text-transform: uppercase; margin-top: -0.25em;
+			float: left; color: #993300; background-color: white; margin-right: 0.75ex;
+			font-family: "Monotype Corsiva",cursive; font-weight: bold; 
+		}
+		a.bc { letter-spacing: 0.15ex; }
+	}
+	
+	@media print {
+		.noprint { display: none; visibility: hidden; }
+		a { color: black; background-color: white; }
+	}
+	</style>
+	<link rel="alternate" type="application/rss+xml" title="Somacon" href="http://www.somacon.com/p998.php"><style type="text/css"><!--
+--></style>
+<script type="text/javascript">
+</script>
+<style type="text/css">
+span.filename {
+	font-size: 13pt;
+	font-weight: bold;
+}
+pre.codeexample {
+	background-color: #F0F0F0;
+	font-size: 9pt;
+}
+span.comment { 
+        color: #009900;
+}
+TABLE.testresults {
+	border-collapse: collapse;
+	border: 1px solid black;
+	font-size: 11pt;
+}
+
+TABLE.testresults TH {
+	color: #000000;
+	background-color: #F0F0F6;
+	border: 1px solid black;
+	padding: 2px;
+}
+
+TABLE.testresults TR TD {
+	border: 1px solid black;
+	padding: 2px;
+	text-align:center;
+}
+TABLE.testresults TD.code {
+	border: 1px solid black;
+	padding: 3px;
+	text-align:left;
+}
+TABLE.testresults TD.result {
+	border: 1px solid black;
+	padding: 2px;
+	text-align:left;
+}
+
+table.companies {
+	border-collapse: collapse;
+}
+table.companies td {
+	border: 1px solid black;
+	font-size: 11pt;
+	text-align: center;
+	padding: 2px;
+}
+table.companies th {
+	border: 1px solid black;
+	color: #008000;
+	background-color: #F0F9F0;
+	font-size: 10pt;
+	padding: 2px;
+}
+table.companies th.tabletitle {
+	color: #800000;
+	background-color: #F9F0F0;
+	font-size: 12pt;
+	padding: 2px;
+}
+table.officers {
+	border-collapse: collapse;
+	width: 100%;
+}
+table.officers th {
+	border: 1px solid black;
+	color: black;
+	background-color: #F0F0F0;
+	font-size: 9pt;
+	padding: 1px;
+}
+table.officers td {
+	border: 1px solid black;
+	font-size: 9pt;
+	text-align: left;
+	padding: 1px;
+}
+td.fastest {
+	background-color: #E3F9E3;
+}
+a.adv {
+	text-decoration:underline;
+	font-size:9pt;
+	color:#0000FF;
+}
+</style>
+<script type="text/javascript">
+// This Javascript is granted to the public domain.
+
+// This is the javascript array holding the function list
+// The PrintJavascriptArray ASP function can be used to print this array.
+var functionlist = Array("abs",
+"acos","acosh","addcslashes","addslashes","aggregate","stream_context_create",
+"swf_startbutton","swfmovie.remove","swfmovie.save","swftext.getwidth","swftext.moveto","sybase_fetch_field","sybase_fetch_object","tanh","tempnam",
+"textdomain","time","udm_errno","udm_error",
+"unset","urldecode","urlencode","user_error","usleep","usort","utf8_decode",
+"utf8_encode","var_dump","vpopmail_error","vpopmail_passwd","vpopmail_set_user_quota","vprintf","vsprintf","xml_parser_create","xml_parser_create_ns",
+"xml_parser_free","xmlrpc_server_add_introspection_data","xmlrpc_server_call_method","xmlrpc_server_create","xmlrpc_server_destroy","xmlrpc_server_register_introspection_callback","yaz_connect","yaz_database","yaz_element",
+"yaz_errno","yp_order","zend_logo_guid","zend_version","zip_close","zip_open","zip_read");
+
+// This is the function that refreshes the list after a keypress.
+// The maximum number to show can be limited to improve performance with
+// huge lists (1000s of entries).
+// The function clears the list, and then does a linear search through the
+// globally defined array and adds the matches back to the list.
+function handleKeyUp(maxNumToShow)
+{
+    var selectObj, textObj, functionListLength;
+    var i, searchPattern, numShown;
+
+    // Set references to the form elements
+    selectObj = document.forms[0].functionselect;
+    textObj = document.forms[0].functioninput;
+
+    // Remember the function list length for loop speedup
+    functionListLength = functionlist.length;
+
+    // Set the search pattern depending
+    if(document.forms[0].functionradio[0].checked == true)
+    {
+        searchPattern = "^"+textObj.value;
+    }
+    else
+    {
+        searchPattern = textObj.value;
+    }
+
+    // Create a regulare expression
+    re = new RegExp(searchPattern,"gi");
+    // Clear the options list
+    selectObj.length = 0;
+
+    // Loop through the array and re-add matching options
+    numShown = 0;
+    for(i = 0; i < functionListLength; i++)
+    {
+        if(functionlist[i].search(re) != -1)
+        {
+            selectObj[numShown] = new Option(functionlist[i],"");
+            numShown++;
+        }
+        // Stop when the number to show is reached
+        if(numShown == maxNumToShow)
+        {
+            break;
+        }
+    }
+    // When options list whittled to one, select that entry
+    if(selectObj.length == 1)
+    {
+        selectObj.options[0].selected = true;
+    }
+}
+
+// this function gets the selected value and loads the appropriate
+// php reference page in the display frame
+// it can be modified to perform whatever action is needed, or nothing
+function handleSelectClick()
+{
+    selectObj = document.forms[0].functionselect;
+    textObj = document.forms[0].functioninput;
+
+    selectedValue = selectObj.options[selectObj.selectedIndex].text;
+
+    selectedValue = selectedValue.replace(/_/g, '-') ;
+    document.location.href = 
+	"http://www.php.net/manual/en/function."+selectedValue+".php";
+
+}
+
+</script>
+</head>
+<body onload="document.forms[0].functioninput.focus(); handleKeyUp(20);">
+<div class="noprint"><a href="http://www.somacon.com/"><img class="noprint" src="autocomplete.combo.box.p241.php_files/p516.png" alt="Somacon.com: Articles on web development, software, and hardware" border="0" height="16" width="728"></a><table style="margin-top: 6px; table-layout: fixed;" border="0" cellpadding="0" cellspacing="0" width="728"><tbody><tr><td width="310"><script type="text/javascript"><!--
+google_ad_client = "ca-pub-2379876391548301";
+google_ad_slot = "7685052446";
+google_ad_width = 300;
+google_ad_height = 250;
+//-->
+</script>
+<script type="text/javascript" src="autocomplete.combo.box.p241.php_files/show_ads.js">
+</script><ins style="display:inline-table;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px"><ins id="aswift_0_anchor" style="display:block;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px"><iframe allowtransparency="true" hspace="0" marginwidth="0" marginheight="0" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){i+='.call';setTimeout(h,0)}else if(h.match){i+='.nav';w.location.replace(h)}s.log&amp;&amp;s.log.push(i)}" vspace="0" id="aswift_0" name="aswift_0" style="left: 0pt; position: absolute; top: 0pt;" frameborder="0" height="250" scrolling="no" width="300"></iframe></ins></ins></td><td style="padding: 0.4em; text-align: justify;" valign="middle"></td></tr></tbody></table><div style="margin:4px;">§ <a class="bc" href="http://www.somacon.com/">Home</a> &gt; <a class="bc" href="http://www.somacon.com/p385.php">Index</a> &gt; <a class="bc" href="http://www.somacon.com/p385.php?cat=ASP+Programming">ASP Programming</a>
+</div></div>
+<h1>Javascript Autocomplete Combobox - find as you type</h1>
+
+<p class="description">Below is an implementation in client-side 
+Javascript of an auto-completing combobox.  The options are printed in a
+ Javascript array that is embedded in the source code sent to the 
+browser.  The <a href="http://www.somacon.com/p239.php">PrintJavascriptArray function</a>
+ can print this array quickly from ASP.  The options list refreshes 
+whenever a key is pressed.  Options in the array that match the search 
+term are displayed.</p>
+
+<p>The search mode can be set to "starts with" or "contains".  Only a 
+fixed number of the matches are displayed, because adding options to a 
+selection box in Javascript is very slow. This number can be configured 
+and set to the size of the selection box (so it always appears full).  
+If the user wants to scroll through all the matches, then he or she can 
+click the "Load All Matches" button.  They will have to wait, but it 
+will load the whole array into the selection box.
+
+</p><p>When the list narrows to a single entry, the single options 
+becomes highlighted.  The form can then be submitted by pressing 
+"Enter".  If the keyboard focus is set to the search term input box on 
+page load, then this becomes a fast, entirely keyboard-based interface. 
+ Interfaces like these are used by the telephone directory operators you
+ reach when you call 411.  One of my clients uses this interface to 
+manage his 2000+ patients.  That interface has an additional "search 
+first name" option, which is activated whenever the secretary types a 
+comma as the first character of the search term.
+
+</p><p>In this particular example, clicking on a function name (or 
+pressing enter) will jump to the PHP reference page for that function.  
+(The <a href="http://www.php.net/">PHP website</a> has recently 
+implemented their own auto-completing combobox on their search page.) 
+Jumping to a page is a common behaviour, but you can change it as you 
+need.
+
+</p><p>To get the source for this combobox, just use the view source command from your web browser.  To see it in action, go to <a href="http://www.somacon.com/p39.php">Javascript Autocomplete Combobox and Search Widget</a>.
+
+</p><p>
+</p><table style="margin: auto;">
+<tbody><tr><td valign="top">
+<b>Search For Function Name</b>
+<form onsubmit="handleSelectClick();return false;" action="#">
+<input name="functionradio" checked="checked" type="radio">Starting With<br>
+<input name="functionradio" type="radio">Containing<br>
+<input onkeyup="handleKeyUp(20);" name="functioninput" value="ac" style="font-size: 10pt; width: 34ex;" type="text"><br>
+<select onclick="handleSelectClick();" name="functionselect" size="20" style="font-size:10pt;width:34ex;">
+<option value="">acos</option><option value="">acosh</option></select>
+<br><input onclick="handleKeyUp(9999999);" value="Load All Matches" type="button">
+</form>
+</td>
+</tr></tbody></table>
+
+<h2>ASP Speed Tricks Site Map</h2><ol><li><a href="http://www.somacon.com/p235.php">ASP Speed Tricks</a></li><li><a href="http://www.somacon.com/p236.php">Optimized Table Printing in ASP</a></li><li><a href="http://www.somacon.com/p238.php">Optimized Heirarchical Table Printing in ASP</a></li><li><a href="http://www.somacon.com/p239.php">Print Javascript Array from ASP</a></li><li><a href="http://www.somacon.com/p240.php">Print Select Options from ASP</a></li><li>Javascript Autocomplete Combobox - find as you type <b><big>&#8592;</big> You Are Here</b></li><li><a href="http://www.somacon.com/p242.php">ASP Speed Tricks Appendix</a></li><li><a href="http://www.somacon.com/p215.php">ASP Speed Tricks PDF Format</a></li></ol>
+<hr style="margin-top:0.3em;margin-bottom:0.4em;" noshade="noshade"><div class="noprint flink"><a href="http://www.somacon.com/" rel="nofollow">Home</a> · <a href="http://www.somacon.com/p2.php?subject=Javascript+Autocomplete+Combobox+-+find+as+you+type" rel="nofollow">Contact</a> · <a href="http://www.somacon.com/p378.php" rel="nofollow">Search</a> · <a href="javascript:window.print();" rel="nofollow">Print</a> · <a rel="nofollow" href="http://www.somacon.com/p457.php?pageid=241">E-mail this page</a> · <a href="https://twitter.com/share?original_referer=http%3A%2F%2Fwww.somacon.com%2Fp241.php&amp;source=tweetbutton&amp;text=Javascript+Autocomplete+Combobox+-+find+as+you+type&amp;url=http%3A%2F%2Fwww.somacon.com%2Fp241.php">Tweet</a></div><div style="margin-top:0.3em;"><small><i>Created 2005-05-08, Last Modified 2011-07-24, © Shailesh N. Humbad</i><br>Disclaimer: This content is provided as-is. The information may be incorrect.</small></div></body></html>
