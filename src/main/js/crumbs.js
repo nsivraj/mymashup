@@ -131,19 +131,6 @@ function record()
     }
 
 
-    function done(event)
-    {
-        webActor.repl.print("Done clicking on objects, so removing listeners!!");
-        chromeWin.document.removeEventListener('click', onClick, true);
-        chromeWin.document.removeEventListener('mouseover', onOver, true);
-        chromeWin.document.removeEventListener('keypress', onKeypress, true);
-        reset(event);
-        
-        // TODO: now write out to a file which elements have been clicked on to play it back later
-        
-    }
-    
-
     function onClick(event)
     {
         var attr, localEventWindow, localDomWindow;
@@ -178,6 +165,20 @@ function record()
         
         //webActor.repl.print("onClick: 4");
     }
+
+
+    function done(event)
+    {
+        webActor.repl.print("Done clicking on objects, so removing listeners!!");
+        chromeWin.document.removeEventListener('click', onClick, true);
+        chromeWin.document.removeEventListener('mouseover', onOver, true);
+        chromeWin.document.removeEventListener('keypress', onKeypress, true);
+        reset(event);
+        
+        // TODO: now write out to a file which elements have been clicked on to play it back later
+        
+    }
+    
 
     chromeWin.document.addEventListener('click', onClick, true);
     chromeWin.document.addEventListener('mouseover', onOver, true);
@@ -312,17 +313,17 @@ WebActor.prototype.crumbProcessor = function (screenURL, loadedURL, params)
                     //sure why as it should, this is the case there the element that was
                     //clicked on originally is an anchor rather than an href...
                     
-                	//actually, these two lines do cause the browser to change but the propagation of the
-                	//event through the dom takes longer than the for loop that we are in and 
-                	//so another onclick callback method needs to be provided so that it can
-                	//launch back into this method to finish the for loop because an onload
-                	//event does not get triggered by the this.dispatchClickEvent method call
-                	//for an anchor; basically, this method needs to be reinvoked for every
-                	//event that ocurrs as the event propagates through the DOM, so that one
-                	//invocation only goes through the for loop once, in fact, the for loop
-                	//should really be changed to a simple if statement and the params.crumbsIndex
-                	//gets incremented by one.
-                	
+                    //actually, these two lines do cause the browser to change but the propagation of the
+                    //event through the dom takes longer than the for loop that we are in and 
+                    //so another onclick callback method needs to be provided so that it can
+                    //launch back into this method to finish the for loop because an onload
+                    //event does not get triggered by the this.dispatchClickEvent method call
+                    //for an anchor; basically, this method needs to be reinvoked for every
+                    //event that ocurrs as the event propagates through the DOM, so that one
+                    //invocation only goes through the for loop once, in fact, the for loop
+                    //should really be changed to a simple if statement and the params.crumbsIndex
+                    //gets incremented by one.
+                    
                     webActor.gotoNextURL("", "crumbProcessor", params);
                     this.dispatchClickEvent(eventWindow, crumbElements[0]);
                 }

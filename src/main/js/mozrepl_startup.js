@@ -19,7 +19,7 @@ this.print("****************************************************");
 
 function loadActor(whichActor)
 {
-	var mozreplInitUrl, mozreplInitDir, endIndex;
+	var mozreplInitUrl, endIndex;
 	
 	mozreplInitUrl = Cc['@mozilla.org/preferences-service;1']
 	    .getService(Ci.nsIPrefBranch)
@@ -27,29 +27,29 @@ function loadActor(whichActor)
 
 	//this.print("mozreplInitUrl : " + mozreplInitUrl);
 	endIndex = mozreplInitUrl.lastIndexOf('/');
-	mozreplInitDir = mozreplInitUrl.substring(0, endIndex);
-	//this.print("mozreplInitDir : " + mozreplInitDir);
+	repl.mozreplInitDir = mozreplInitUrl.substring(0, endIndex);
+	//this.print("repl.mozreplInitDir : " + repl.mozreplInitDir);
 
-	repl.load(mozreplInitDir + "/kernel.js", repl);
+	repl.load(repl.mozreplInitDir + "/kernel.js", repl);
 	if ("bsa" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/bsa.actor.js", repl);
+		repl.load(repl.mozreplInitDir + "/bsa.actor.js", repl);
 	}
 	else if ("test" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/test.actor.js", repl);
+		repl.load(repl.mozreplInitDir + "/test.actor.js", repl);
 	}
 	else if ("mint" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/mint.actor.js", repl);
+		repl.load(repl.mozreplInitDir + "/mint.actor.js", repl);
 	}
 	else if ("crumbs" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/crumbs.js", repl);
+		repl.load(repl.mozreplInitDir + "/crumbs.js", repl);
 	}
 	else if ("mysearch" === whichActor)
 	{
-		repl.load(mozreplInitDir + "/mysearch.js", repl);
+		repl.load(repl.mozreplInitDir + "/mysearch.js", repl);
 		repl.catchEvents();
 	}
 }
@@ -78,6 +78,10 @@ function reloadActor(whichActor)
 	else if ("crumbs" === whichActor)
 	{
 		repl.loadActor("crumbs");
+	}
+	else if ("mysearch" === whichActor)
+	{
+		repl.loadActor("mysearch");
 	}
 }
 

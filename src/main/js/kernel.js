@@ -6,6 +6,9 @@
 /*global Components: false, Ci: false */
 
 
+//Components.utils.import("resource://gre/modules/DomUtils.jsm");
+//var domUtil = Components.classes["@mozilla.org/inspector/dom-utils;1"].getService(Components.interfaces.inIDOMUtils);
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 // this section is for functions that test the kernel
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -219,6 +222,7 @@ function WebActor(repl)
             //this.repl.print("called allowMethod: "+isAllowed);
             if (isAllowed)
             {
+                params.event = event;
                 //this.repl.print("TRUE :: checking method '" + methodName + "' and screenURL '" + screenURL + "' and loadedURL '" + event.target.location.href + "'");
                 // TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
                 screenResponse = eval("this." + methodName + "(screenURL, \"" + event.target.location.href + "\", params);");
@@ -655,6 +659,14 @@ Denis
                event.target.ownerDocument.defaultView.window)
             {
                 foundWindow = event.target.ownerDocument.defaultView.window;
+                //this.repl.print("Found window using standard DOM JSObject " + event);
+            }
+            else if (event.target && event.target.wrappedJSObject &&
+                    event.target.wrappedJSObject.defaultView &&
+                    event.target.wrappedJSObject.defaultView.window)
+            {
+                foundWindow = event.target.wrappedJSObject.defaultView.window;
+                this.repl.print("Found window using wrapped JSObject " + event);
             }
             else
             {
@@ -682,6 +694,61 @@ Denis
         
         return foundWindow;
     };
+    
+    /**
+    * go through every child node of element and collect the text
+    */
+    this.getText = function (element)
+    {
+        var c = element, n = null, textBuffer = "", tmp;
+
+        do
+        {
+            n = c.firstChild;
+            if (n === null)
+            {
+                // visit c
+                if (c.nodeType === 3)
+                {
+                    textBuffer += " " + c.nodeValue.replace(/\s/, "");
+                    // done visit c
+                }
+            
+                n = c.nextSibling;
+            }
+        
+            if (n === null)
+            {
+                tmp = c;
+                do
+                {
+                    n = tmp.parentNode;
+                    if (n === element)
+                    {
+                        break;
+                    }
+                    
+                    // visit n
+                    if (n.nodeType === 3)
+                    {
+                        textBuffer += " " + n.nodeValue.replace(/\s/, "");
+                        // done visit n
+                    }
+                    
+                    tmp = n;
+                    n = n.nextSibling;
+                }
+                while (n === null);
+            }
+        
+            c = n;
+        }
+        while (c !== element);
+        
+        return textBuffer;
+    };
+    
+    
     
     /**
      * Gets an XPath for an element which describes its hierarchical location.

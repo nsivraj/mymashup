@@ -15,7 +15,255 @@ icelandic - leit (search)
 
 zapamiti
 
-XBSDB + jStorage for in browser database and persistance
+XBSDB only allows one select statement per database (too bad)
+jStorage for in browser database and persistance (does not support querying the data at all)
+TaffyDB - does not support joins directly across instances of the TaffyDB, this still might work by just
+          having a non-normalized database so that the keywords are duplicated for each individual URL
+www.javascriptdatabase.com - MS Access and ASP centric and old as well
+SQLite - part of older W3C spec and is not really supported anymore
+IndexedDB - part of the HTML5 spec
+
+
+
+*************************************************************************************************
+** Best Option
+*************************************************************************************************
+IndexedDB - part of the HTML5 spec
+
+
+**************************************************************************************
+** IndexedDB - Open and setup a database
+**************************************************************************************
+var request = window.indexedDB.open("CandyDB",
+                                    "My candy store database");
+request.onsuccess = function(event) {
+  var db = event.result;
+  if (db.version != "1") {
+    // User's first visit, initialize database.
+    var createdObjectStoreCount = 0;
+    var objectStores = [
+      { name: "kids", keyPath: "id", autoIncrement: true },
+      { name: "candy", keyPath: "id", autoIncrement: true },
+      { name: "candySales", keyPath: "", autoIncrement: true }
+    ];
+ 
+    function objectStoreCreated(event) {
+      if (++createdObjectStoreCount == objectStores.length) {
+        db.setVersion("1").onsuccess = function(event) {
+          loadData(db);
+        };
+      }
+    }
+ 
+    for (var index = 0; index < objectStores.length; index++) {
+      var params = objectStores[index];
+      request = db.createObjectStore(params.name, params.keyPath,
+                                     params.autoIncrement);
+      request.onsuccess = objectStoreCreated;
+    }
+  }
+  else {
+    // User has been here before, no initialization required.
+    loadData(db);
+  }
+};
+
+
+
+
+**************************************************************************************
+** IndexedDB - Store data in database
+**************************************************************************************
+var kids = [
+  { name: "Anna" },
+  { name: "Betty" },
+  { name: "Christine" }
+];
+ 
+var request = window.indexedDB.open("CandyDB",
+                                    "My candy store database");
+request.onsuccess = function(event) {
+  var objectStore = event.result.objectStore("kids");
+  for (var index = 0; index < kids.length; index++) {
+    var kid = kids[index];
+    objectStore.add(kid).onsuccess = function(event) {
+      document.getElementById("display").textContent =
+        "Saved record for " + kid.name + " with id " + event.result;
+    };
+  }
+};
+
+
+
+
+**************************************************************************************
+** IndexedDB - Query data from database
+**************************************************************************************
+var request = window.indexedDB.open("CandyDB",
+                                    "My candy store database");
+request.onsuccess = function(event) {
+  // Enumerate the entire object store.
+  request = event.result.objectStore("kids").openCursor();
+  request.onsuccess = function(event) {
+    var cursor = event.result;
+    // If cursor is null then we've completed the enumeration.
+    if (!cursor) {
+      return;
+    }
+    var element = document.createElement("div");
+    element.textContent = cursor.value.name;
+    document.getElementById("kidList").appendChild(element);
+    cursor.continue();
+  };
+};
+
+
+
+
+
+
+var html5rocks = {};
+var indexedDB = window.indexedDB || window.webkitIndexedDB ||
+                window.mozIndexedDB;
+
+if ('webkitIndexedDB' in window) {
+  window.IDBTransaction = window.webkitIDBTransaction;
+  window.IDBKeyRange = window.webkitIDBKeyRange;
+}
+
+html5rocks.indexedDB = {};
+html5rocks.indexedDB.db = null;
+
+html5rocks.indexedDB.onerror = function(e) {
+  console.log(e);
+};
+
+html5rocks.indexedDB.open = function() {
+  var request = indexedDB.open("todos");
+
+  request.onsuccess = function(e) {
+    var v = "1.98";
+    html5rocks.indexedDB.db = e.target.result;
+    var db = html5rocks.indexedDB.db;
+    // We can only create Object stores in a setVersion transaction;
+    if (v!= db.version) {
+      var setVrequest = db.setVersion(v);
+
+      // onsuccess is the only place we can create Object Stores
+      setVrequest.onfailure = html5rocks.indexedDB.onerror;
+      setVrequest.onsuccess = function(e) {
+        if(db.objectStoreNames.contains("todo")) {
+          db.deleteObjectStore("todo");
+        }
+
+        var store = db.createObjectStore("todo",
+          {keyPath: "timeStamp"});
+
+        html5rocks.indexedDB.getAllTodoItems();
+      };
+    }
+    else {
+      html5rocks.indexedDB.getAllTodoItems();
+    }
+  };
+
+  request.onfailure = html5rocks.indexedDB.onerror;
+}
+
+html5rocks.indexedDB.addTodo = function(todoText) {
+  var db = html5rocks.indexedDB.db;
+  var trans = db.transaction(["todo"], IDBTransaction.READ_WRITE, 0);
+  var store = trans.objectStore("todo");
+
+  var data = {
+    "text": todoText,
+    "timeStamp": new Date().getTime()
+  };
+
+  var request = store.put(data);
+
+  request.onsuccess = function(e) {
+    html5rocks.indexedDB.getAllTodoItems();
+  };
+
+  request.onerror = function(e) {
+    console.log("Error Adding: ", e);
+  };
+};
+
+html5rocks.indexedDB.deleteTodo = function(id) {
+  var db = html5rocks.indexedDB.db;
+  var trans = db.transaction(["todo"], IDBTransaction.READ_WRITE, 0);
+  var store = trans.objectStore("todo");
+
+  var request = store.delete(id);
+
+  request.onsuccess = function(e) {
+    html5rocks.indexedDB.getAllTodoItems();
+  };
+
+  request.onerror = function(e) {
+    console.log("Error Adding: ", e);
+  };
+};
+
+html5rocks.indexedDB.getAllTodoItems = function() {
+  var todos = document.getElementById("todoItems");
+  todos.innerHTML = "";
+
+  var db = html5rocks.indexedDB.db;
+  var trans = db.transaction(["todo"], IDBTransaction.READ_WRITE, 0);
+  var store = trans.objectStore("todo");
+
+  // Get everything in the store;
+  var keyRange = IDBKeyRange.lowerBound(0);
+  var cursorRequest = store.openCursor(keyRange);
+
+  cursorRequest.onsuccess = function(e) {
+    var result = e.target.result;
+    if(!!result == false)
+      return;
+
+    renderTodo(result.value);
+    result.continue();
+  };
+
+  cursorRequest.onerror = html5rocks.indexedDB.onerror;
+};
+
+function renderTodo(row) {
+  var todos = document.getElementById("todoItems");
+  var li = document.createElement("li");
+  var a = document.createElement("a");
+  var t = document.createTextNode(row.text);
+
+  a.addEventListener("click", function() {
+    html5rocks.indexedDB.deleteTodo(row.timeStamp);
+  }, false);
+
+  a.textContent = " [Delete]";
+  li.appendChild(t);
+  li.appendChild(a);
+  todos.appendChild(li)
+}
+
+function addTodo() {
+  var todo = document.getElementById("todo");
+  html5rocks.indexedDB.addTodo(todo.value);
+  todo.value = "";
+}
+
+function init() {
+  html5rocks.indexedDB.open();
+}
+
+window.addEventListener("DOMContentLoaded", init(), false);
+
+
+
+
+
+
 
 Allow a google login or a facebook login or an openid login to identify the person when needed
 
