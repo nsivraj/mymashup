@@ -261,9 +261,92 @@ window.addEventListener("DOMContentLoaded", init(), false);
 
 
 
+How to do Content Extraction - being able to identify what a String of text is about and categorize it
+-- here are some google categories
+Arts & Entertainment
+Autos & Vehicles
+Beauty & Fitness
+Books & Literature
+Business & Industrial
+Computers & Electronics
+Finance
+Food & Drink
+Games
+Health
+Hobbies & Leisure
+Home & Garden
+Internet & Telecom
+Jobs & Education
+Law & Government
+News
+Online Communities
+People & Society
+Pets & Animals
+Real Estate
+Reference
+Science
+Shopping
+Sports
+Travel
+World Localities
 
 
+-- these are topic categories from the extractiv wiki
+    ﻿arts_&_entertainment
+    autos_&_vehicles
+    beauty_&_fitness
+    blog
+    books_&_literature
+    business_&_industrial
+    computers_&_electronics
+    crime
+    economy
+    family
+    fashion
+    finance
+    food_&_drink
+    games
+    health
+    hobbies_&_leisure
+    home_&_garden
+    humor
+    internet_&_telecom
+    jobs_&_education
+    law_&_government
+    legal
+    medicines
+    news
+    online_communities
+    people_&_society
+    pets_&_animals
+    photography
+    politics
+    real_estate
+    reference
+    science
+    sex
+    shopping
+    sports
+    technology
+    travel
+    war
 
+
+- Obtain Text
+- Strip punctuation, special characters, etc.
+- Strip "simple" words
+- Split on Spaces
+- Loop Over Split Text
+    - Add word to Array/HashTable/Etc if it doesn't exist;
+       if it does, increment counter for that word
+You're also going to want to look into Stemming. Stemming is used to reduce words to their root. For example going => go, cars => car, etc.
+One way to denoise results with too many keywords (e.g. topia.termextract and termine) is to create a vocabulary of terms that occur frequently, and then throw out proposed terms that are not in the vocabulary. In other words, do two passes over your corpus: The first pass, count the frequency of each keywords. In the second pass, discard the keywords that are too rare.
+
+
+algorithm for building a concept mining database
+allow all words in every document to be put in the database
+link all urls to those words
+slowly flush words out of the database when it is determined that the word is no longer pertinent
 
 Allow a google login or a facebook login or an openid login to identify the person when needed
 

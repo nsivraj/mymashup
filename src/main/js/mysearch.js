@@ -112,18 +112,31 @@ WebActor.prototype.indexURL = function (screenURL, loadedURL, params)
     // document.body.innerText;
     // document.body.textContent
     
-    var localDomWindow = webActor.findDOMWindow(params.event), docText;
+    var localDomWindow = webActor.findDOMWindow(params.event), docText, currentLoc = params.event.target.location;
+    if (loadedURL !== params.event.target.location.href)
+    {
+        throw "The parameter 'loadedURL' " + loadedURL + " does not match the 'currentLoc.href' " + currentLoc.href;
+    }
     
+    // Tags, Titles, Keywords, Image Alt=text, and KW density just doesn't seem to be adequate enough anymore
     
-    // get head content first and parse that into words that can be used to index the page
-    <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-    <meta name="keywords" content=" Best DOM tree traverse, dhtml, javascript, css, dynamic html, xml, html, php, cgi" />
-    <meta name="description" content="[Archive]  Best DOM tree traverse JavaScript" />
+    // take the URL loadedURL and parse for keywords to store with the URL
+    // 1) get the host from loadedURL and use the hostname as a keyword - strip off the "www." from the hostname
+    //currentLoc.hostname;
+    // 2) get the URI from loadedURL - parse it for keywords
+    //currentLoc.pathname;
+    // 3) get the queryString from loadedURL - parse it for keywords
+    //currentLoc.search;
     
-    <title> Best DOM tree traverse [Archive]  - Dynamic Drive Forums</title>
-    <link rel="stylesheet" type="text/css" href="http://www.dynamicdrive.com/forums/archive/archive.css" />
-    </head>
+    // get head content first and parse that into key words that can be used to index the page
+    //<head>
+    //<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    //<meta name="keywords" content=" Best DOM tree traverse, dhtml, javascript, css, dynamic html, xml, html, php, cgi" />
+    //<meta name="description" content="[Archive]  Best DOM tree traverse JavaScript" />
+    
+    //<title> Best DOM tree traverse [Archive]  - Dynamic Drive Forums</title>
+    //<link rel="stylesheet" type="text/css" href="http://www.dynamicdrive.com/forums/archive/archive.css" />
+    //</head>
     
     
     //webActor.repl.print("indexURL localDomWindow: " + localDomWindow.body.innerText);
