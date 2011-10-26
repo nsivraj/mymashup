@@ -29,9 +29,10 @@ try
 catch (ex)
 {
     //print("Exception is: " + ex);
-    wordDBConn.executeSimpleSQL("create table words (word_id integer, key_word varchar(120) unique, search_count integer, primary key(word_id desc))");
+    // normalize to lowercase
+    wordDBConn.executeSimpleSQL("create table words (word_id integer, word varchar(120) unique, count integer, primary key(word_id desc))");
     wordDBConn.executeSimpleSQL("create table urls (url_id integer, url varchar(2000) unique, last_load_date varchar(25), load_count integer, as_link_count integer, primary key(url_id desc))");
-    wordDBConn.executeSimpleSQL("create table word2url (word_id integer, url_id integer, isTag boolean, foreign key(word_id) references words(word_id), foreign key(url_id) references urls(url_id), primary key(word_id, url_id desc))");
+    wordDBConn.executeSimpleSQL("create table word2url (word_id integer, url_id integer, isTag boolean, word_count integer, foreign key(word_id) references words(word_id), foreign key(url_id) references urls(url_id), primary key(word_id, url_id desc))");
 }
 
 

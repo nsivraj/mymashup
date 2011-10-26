@@ -710,7 +710,7 @@ Denis
                 // visit c
                 if (c.nodeType === 3)
                 {
-                    textBuffer += " " + c.nodeValue.replace(/\s/, "");
+                    textBuffer += " " + c.nodeValue; //.replace(/\s/, "");
                     // done visit c
                 }
             
@@ -731,7 +731,7 @@ Denis
                     // visit n
                     if (n.nodeType === 3)
                     {
-                        textBuffer += " " + n.nodeValue.replace(/\s/, "");
+                        textBuffer += " " + n.nodeValue; //.replace(/\s/, "");
                         // done visit n
                     }
                     
