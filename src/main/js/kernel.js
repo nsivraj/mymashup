@@ -223,6 +223,8 @@ function WebActor(repl)
             if (isAllowed)
             {
                 params.event = event;
+                this.repl.print("processURL --> params.event.target.location.href: " + params.event.target.location.href);
+                this.repl.print("processURL --> event.target.location.href: " + event.target.location.href);
                 //this.repl.print("TRUE :: checking method '" + methodName + "' and screenURL '" + screenURL + "' and loadedURL '" + event.target.location.href + "'");
                 // TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
                 screenResponse = eval("this." + methodName + "(screenURL, \"" + event.target.location.href + "\", params);");
@@ -694,6 +696,64 @@ Denis
         
         return foundWindow;
     };
+    
+    
+    this.getHeaderText = function (domDocument)
+    {
+        // get head content first and parse that into key words that can be used to index the page
+        //<head>
+        //<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        //<meta name="keywords" content=" Best DOM tree traverse, dhtml, javascript, css, dynamic html, xml, html, php, cgi" />
+        //<meta name="description" content="[Archive]  Best DOM tree traverse JavaScript" />
+        
+        //<title> Best DOM tree traverse [Archive]  - Dynamic Drive Forums</title>
+        //<link rel="stylesheet" type="text/css" href="http://www.dynamicdrive.com/forums/archive/archive.css" />
+        //</head>
+
+        //var headTags = domDocument.getElementsByTagName("head"), i, 
+        var j, metaTags, titleTags, headerText = "";
+        //for (i = 0; i < headTags.length; i += 1)
+        //{
+            // get meta tag named keywords
+            // get meta tag named description
+            metaTags = domDocument.getElementsByTagName("meta");
+            this.repl.print("metaTags.length: " + metaTags.length);
+            for (j = 0; j < metaTags.length; j += 1)
+            {
+                //this.repl.print("metaTags[j]: " + metaTags[j]);
+                //this.repl.print("metaTags[j].getAttribute(\"name\"): " + metaTags[j].getAttribute("name"));
+                if (metaTags[j] && metaTags[j].getAttribute("name") &&
+                    metaTags[j].getAttribute("name") !== null &&
+                    (metaTags[j].getAttribute("name") === "keywords" ||
+                     metaTags[j].getAttribute("name") === "description") &&
+                    metaTags[j].getAttribute("content"))
+                {
+                    //this.repl.print("metaTags[j].getAttribute(\"content\"): " + metaTags[j].getAttribute("content"));
+                    headerText += " " + metaTags[j].getAttribute("content");
+                }
+                //else if (metaTags[j] && metaTags[j].getAttribute("name") &&
+                //         metaTags[j].getAttribute("name") === "description" &&
+                //         metaTags[j].getAttribute("content"))
+                //{
+                //    headerText += " " + metaTags[j].getAttribute("content");
+                //}
+            }
+
+            // get title tag content
+            titleTags = domDocument.getElementsByTagName("title");
+            for (j = 0; j < titleTags.length; j += 1)
+            {
+                if (titleTags[j])
+                {
+                    headerText += " " + titleTags[j].textContent;
+                }
+            }
+        //}
+        
+        return headerText;
+    };
+    
+    
     
     /**
     * go through every child node of element and collect the text

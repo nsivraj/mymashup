@@ -32,7 +32,7 @@ catch (ex)
     // normalize to lowercase
     wordDBConn.executeSimpleSQL("create table words (word_id integer, word varchar(120) unique, count integer, primary key(word_id desc))");
     wordDBConn.executeSimpleSQL("create table urls (url_id integer, url varchar(2000) unique, last_load_date varchar(25), load_count integer, as_link_count integer, primary key(url_id desc))");
-    wordDBConn.executeSimpleSQL("create table word2url (word_id integer, url_id integer, isTag boolean, word_count integer, foreign key(word_id) references words(word_id), foreign key(url_id) references urls(url_id), primary key(word_id, url_id desc))");
+    wordDBConn.executeSimpleSQL("create table word2url (word_id integer, url_id integer, isTag boolean, inHeader boolean, word_count integer, foreign key(word_id) references words(word_id), foreign key(url_id) references urls(url_id), primary key(word_id, url_id desc))");
 }
 
 
@@ -113,7 +113,7 @@ WebActor.prototype.indexURL = function (screenURL, loadedURL, params)
     // document.body.innerText;
     // document.body.textContent
     
-    var localDomWindow = webActor.findDOMWindow(params.event), docText, currentLoc = params.event.target.location;
+    var localDomWindow = webActor.findDOMWindow(params.event), docText, currentLoc = params.event.target.location, headerText;
     if (loadedURL !== params.event.target.location.href)
     {
         throw "The parameter 'loadedURL' " + loadedURL + " does not match the 'currentLoc.href' " + currentLoc.href;
@@ -121,34 +121,35 @@ WebActor.prototype.indexURL = function (screenURL, loadedURL, params)
     
     // Tags, Titles, Keywords, Image Alt=text, and KW density just doesn't seem to be adequate enough anymore
     
+    webActor.repl.print("*******************************************************************************************************************");
+    
     // take the URL loadedURL and parse for keywords to store with the URL
+    webActor.repl.print("currentLoc.href: " + currentLoc.href);
     // 1) get the host from loadedURL and use the hostname as a keyword - strip off the "www." from the hostname
-    //currentLoc.hostname;
+    // maybe the hostname should be the only part of the url that is used as a word to index the page
+    webActor.repl.print("currentLoc.hostname: " + currentLoc.hostname);
+    
     // 2) get the URI from loadedURL - parse it for keywords
-    //currentLoc.pathname;
+    webActor.repl.print("currentLoc.pathname: " + currentLoc.pathname);
     // 3) get the queryString from loadedURL - parse it for keywords
-    //currentLoc.search;
+    webActor.repl.print("currentLoc.queryString: " + currentLoc.search);
     
-    // get head content first and parse that into key words that can be used to index the page
-    //<head>
-    //<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-    //<meta name="keywords" content=" Best DOM tree traverse, dhtml, javascript, css, dynamic html, xml, html, php, cgi" />
-    //<meta name="description" content="[Archive]  Best DOM tree traverse JavaScript" />
+    headerText = webActor.getHeaderText(localDomWindow.document);
+    webActor.repl.print("indexURL headerText: " + headerText);
     
-    //<title> Best DOM tree traverse [Archive]  - Dynamic Drive Forums</title>
-    //<link rel="stylesheet" type="text/css" href="http://www.dynamicdrive.com/forums/archive/archive.css" />
-    //</head>
+    webActor.repl.print("localDomWindow.document.referrer: " + localDomWindow.document.referrer);
     
+    Need to figure out how to handle the exact same content being indexed on a child URL that loads inside a parent or first URL!!!
+    The parent or first URL loads which then causes the child URL to load but the content in the window remains the same
     
     //webActor.repl.print("indexURL localDomWindow: " + localDomWindow.body.innerText);
     //webActor.repl.print("indexURL localDomWindow.body: " + localDomWindow.body);
     //webActor.repl.print("indexURL localDomWindow.body.innerText: " + localDomWindow.body.innerText);
-    webActor.repl.print("*******************************************************************************************************************");
     //webActor.repl.print("indexURL localDomWindow: " + localDomWindow);
     //webActor.repl.print("indexURL localDomWindow.document.body: " + localDomWindow.document.body);
     //webActor.repl.print("indexURL localDomWindow.document.body.textContent: " + localDomWindow.document.body.textContent);
     docText = webActor.getText(localDomWindow.document.documentElement);
-    webActor.repl.print("indexURL localDomWindow.document.documentElement: " + docText);
+    //webActor.repl.print("indexURL localDomWindow.document.documentElement: " + docText);
     //webActor.repl.print("indexURL localDomWindow.document.body.innerText: " + localDomWindow.document.body.innerText);
     webActor.repl.print("*******************************************************************************************************************");
     webActor.repl.print("*******************************************************************************************************************");
