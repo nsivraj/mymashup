@@ -114,7 +114,25 @@ WebActor.prototype.indexURL = function (screenURL, loadedURL, params)
     // document.body.textContent
     
     var localDomWindow = webActor.findDOMWindow(params.event), docText, currentLoc = params.event.target.location, headerText;
-    if (loadedURL !== params.event.target.location.href)
+    // TODO: get the url out of the url text field and if loadedURL matches the url in the url text field then process the content
+    // how do I get a handle on the object whose id is urlbar so that I can get it's value
+    // firefox urlbar object
+    //mouseclick event.target.name: undefined
+    //mouseclick event.target.type: autocomplete
+    //mouseclick event.target.tagName: textbox
+    //mouseclick event.target.id: urlbar
+    //mouseclick event.target.value: http://welcome.to.inmotion/portalpgs/welcome.htm
+    //webActor.repl.print("indexURL localDomWindow.location: " + localDomWindow.location);
+    //webActor.repl.print("indexURL localDomWindow.location.id: " + localDomWindow.location.id);
+    //webActor.repl.print("indexURL localDomWindow.location.value: " + localDomWindow.location.value);
+    //webActor.repl.print("indexURL localDomWindow.location.href: " + localDomWindow.location.href);
+    
+    if (loadedURL !== localDomWindow.location.href)
+    {
+        webActor.repl.print("indexURL loadedURL '"+loadedURL+"' does not match localDomWindow.location.href '"+localDomWindow.location.href+"' !!");
+        return;
+    }
+    else if (loadedURL !== currentLoc.href)
     {
         throw "The parameter 'loadedURL' " + loadedURL + " does not match the 'currentLoc.href' " + currentLoc.href;
     }
@@ -139,17 +157,14 @@ WebActor.prototype.indexURL = function (screenURL, loadedURL, params)
     
     webActor.repl.print("localDomWindow.document.referrer: " + localDomWindow.document.referrer);
     
-    Need to figure out how to handle the exact same content being indexed on a child URL that loads inside a parent or first URL!!!
-    The parent or first URL loads which then causes the child URL to load but the content in the window remains the same
-    
     //webActor.repl.print("indexURL localDomWindow: " + localDomWindow.body.innerText);
     //webActor.repl.print("indexURL localDomWindow.body: " + localDomWindow.body);
     //webActor.repl.print("indexURL localDomWindow.body.innerText: " + localDomWindow.body.innerText);
     //webActor.repl.print("indexURL localDomWindow: " + localDomWindow);
     //webActor.repl.print("indexURL localDomWindow.document.body: " + localDomWindow.document.body);
-    //webActor.repl.print("indexURL localDomWindow.document.body.textContent: " + localDomWindow.document.body.textContent);
-    docText = webActor.getText(localDomWindow.document.documentElement);
-    //webActor.repl.print("indexURL localDomWindow.document.documentElement: " + docText);
+    //docText = localDomWindow.document.body.textContent;
+    docText = webActor.getText(localDomWindow.document.documentElement, 600000);
+    webActor.repl.print("indexURL docText: " + docText);
     //webActor.repl.print("indexURL localDomWindow.document.body.innerText: " + localDomWindow.document.body.innerText);
     webActor.repl.print("*******************************************************************************************************************");
     webActor.repl.print("*******************************************************************************************************************");
@@ -506,17 +521,23 @@ function catchEvents()
     
     function onClick(event)
     {
-        webActor.renderMySearchTool(event);
         //var attr, localEventWindow, localDomWindow;
+        var localDomWindow;
+        webActor.renderMySearchTool(event);
         
         //debugEvent(event);
         
+        localDomWindow = webActor.findDOMWindow(event);
         webActor.repl.print("the mouse has been clicked: " + event);
         webActor.repl.print("mouseclick event.target.name: " + event.target.name);
         webActor.repl.print("mouseclick event.target.type: " + event.target.type);
         webActor.repl.print("mouseclick event.target.tagName: " + event.target.tagName);
         webActor.repl.print("mouseclick event.target.id: " + event.target.id);
         webActor.repl.print("mouseclick event.target.value: " + event.target.value);
+        webActor.repl.print("mouseclick localDomWindow.location: " + localDomWindow.location);
+        webActor.repl.print("mouseclick localDomWindow.location.id: " + localDomWindow.location.id);
+        webActor.repl.print("mouseclick localDomWindow.location.value: " + localDomWindow.location.value);
+        webActor.repl.print("mouseclick localDomWindow.location.href: " + localDomWindow.location.href);
         webActor.repl.print("---------------------------------------------------------------------------------------------------------------");
         
         //reset(event);

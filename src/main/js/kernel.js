@@ -223,8 +223,8 @@ function WebActor(repl)
             if (isAllowed)
             {
                 params.event = event;
-                this.repl.print("processURL --> params.event.target.location.href: " + params.event.target.location.href);
-                this.repl.print("processURL --> event.target.location.href: " + event.target.location.href);
+                //this.repl.print("processURL --> params.event.target.location.href: " + params.event.target.location.href);
+                //this.repl.print("processURL --> event.target.location.href: " + event.target.location.href);
                 //this.repl.print("TRUE :: checking method '" + methodName + "' and screenURL '" + screenURL + "' and loadedURL '" + event.target.location.href + "'");
                 // TODO: before doing the eval make sure that the this.chromeWin and the this.domWindow are set correctly
                 screenResponse = eval("this." + methodName + "(screenURL, \"" + event.target.location.href + "\", params);");
@@ -697,6 +697,17 @@ Denis
         return foundWindow;
     };
     
+
+    this.trim = function (str)
+    {
+        str = str.replace(/^\s\s*/, '');
+        var ws = /\s/, i = str.length;
+        i -= 1;
+        while (ws.test(str.charAt(i))) { i -= 1; }
+        return str.slice(0, i + 1);
+        //return str;
+    };
+    
     
     this.getHeaderText = function (domDocument)
     {
@@ -712,43 +723,34 @@ Denis
 
         //var headTags = domDocument.getElementsByTagName("head"), i, 
         var j, metaTags, titleTags, headerText = "";
-        //for (i = 0; i < headTags.length; i += 1)
-        //{
-            // get meta tag named keywords
-            // get meta tag named description
-            metaTags = domDocument.getElementsByTagName("meta");
-            this.repl.print("metaTags.length: " + metaTags.length);
-            for (j = 0; j < metaTags.length; j += 1)
+        // get meta tag named keywords
+        // get meta tag named description
+        metaTags = domDocument.getElementsByTagName("meta");
+        this.repl.print("metaTags.length: " + metaTags.length);
+        for (j = 0; j < metaTags.length; j += 1)
+        {
+            //this.repl.print("metaTags[j]: " + metaTags[j]);
+            //this.repl.print("metaTags[j].getAttribute(\"name\"): " + metaTags[j].getAttribute("name"));
+            if (metaTags[j] && metaTags[j].getAttribute("name") &&
+                metaTags[j].getAttribute("name") !== null &&
+                (metaTags[j].getAttribute("name") === "keywords" ||
+                 metaTags[j].getAttribute("name") === "description") &&
+                metaTags[j].getAttribute("content"))
             {
-                //this.repl.print("metaTags[j]: " + metaTags[j]);
-                //this.repl.print("metaTags[j].getAttribute(\"name\"): " + metaTags[j].getAttribute("name"));
-                if (metaTags[j] && metaTags[j].getAttribute("name") &&
-                    metaTags[j].getAttribute("name") !== null &&
-                    (metaTags[j].getAttribute("name") === "keywords" ||
-                     metaTags[j].getAttribute("name") === "description") &&
-                    metaTags[j].getAttribute("content"))
-                {
-                    //this.repl.print("metaTags[j].getAttribute(\"content\"): " + metaTags[j].getAttribute("content"));
-                    headerText += " " + metaTags[j].getAttribute("content");
-                }
-                //else if (metaTags[j] && metaTags[j].getAttribute("name") &&
-                //         metaTags[j].getAttribute("name") === "description" &&
-                //         metaTags[j].getAttribute("content"))
-                //{
-                //    headerText += " " + metaTags[j].getAttribute("content");
-                //}
+                //this.repl.print("metaTags[j].getAttribute(\"content\"): " + metaTags[j].getAttribute("content"));
+                headerText += " " + this.trim(metaTags[j].getAttribute("content")) + " ";
             }
+        }
 
-            // get title tag content
-            titleTags = domDocument.getElementsByTagName("title");
-            for (j = 0; j < titleTags.length; j += 1)
+        // get title tag content
+        titleTags = domDocument.getElementsByTagName("title");
+        for (j = 0; j < titleTags.length; j += 1)
+        {
+            if (titleTags[j])
             {
-                if (titleTags[j])
-                {
-                    headerText += " " + titleTags[j].textContent;
-                }
+                headerText += " " + this.trim(titleTags[j].textContent) + " ";
             }
-        //}
+        }
         
         return headerText;
     };
@@ -758,7 +760,7 @@ Denis
     /**
     * go through every child node of element and collect the text
     */
-    this.getText = function (element)
+    this.getText = function (element, maxLen)
     {
         var c = element, n = null, textBuffer = "", tmp;
 
@@ -770,7 +772,8 @@ Denis
                 // visit c
                 if (c.nodeType === 3)
                 {
-                    textBuffer += " " + c.nodeValue; //.replace(/\s/, "");
+                    textBuffer += " " + this.trim(c.nodeValue) + " "; //.replace(/\s/, "");
+                    if (textBuffer.length > maxLen) { break; }
                     // done visit c
                 }
             
@@ -791,7 +794,8 @@ Denis
                     // visit n
                     if (n.nodeType === 3)
                     {
-                        textBuffer += " " + n.nodeValue; //.replace(/\s/, "");
+                        textBuffer += " " + this.trim(n.nodeValue) + " "; //.replace(/\s/, "");
+                        if (textBuffer.length > maxLen) { break; }
                         // done visit n
                     }
                     
